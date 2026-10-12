@@ -2,7 +2,7 @@
 
 ## 当前目标
 
-两天内交付题 D 的 MVP。先读 `docs/plan.md`、`docs/architecture.md` 和 `docs/worklog.md`。核心实现和 19 项测试已完成；继续以 docs/evidence 的实际验收为准，发布状态见 README 和交付说明。用户的新要求优先于本文件。
+两天内交付题 D 的 MVP。先读 `docs/plan.md`、`docs/architecture.md` 和 `docs/worklog.md`。核心实现与 v0.2 四项优化已完成，当前 31 项回归测试通过；继续以 docs/evidence 的实际验收为准，发布状态见 README 和交付说明。用户的新要求优先于本文件。
 
 ## 范围和组织
 

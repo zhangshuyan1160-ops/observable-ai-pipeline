@@ -1,10 +1,10 @@
 # Frameflow · 可恢复的 AI 动画任务管线
 
-[公开源码](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline) · [下载交付 ZIP](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/raw/refs/heads/main/delivery/observable-ai-pipeline-v0.1.0.zip) · [提交说明](docs/submission.md)
+[公开源码](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline) · [下载交付 ZIP](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/raw/refs/heads/main/delivery/observable-ai-pipeline-v0.2.0.zip) · [提交说明](docs/submission.md)
 
 题 D 的两天 MVP。计算和 GPU 使用 MOCK，状态事务、独立 Worker、进程中断、检查点和文件产物真实执行。无需服务器、CUDA、大模型、Node 构建链或 Docker Desktop。
 
-![任务看板](docs/evidence/dashboard.png)
+![任务看板](docs/evidence/priority-one-dashboard.png)
 
 ## 五分钟了解
 
@@ -20,7 +20,7 @@ flowchart LR
   E --> F
 ```
 
-**已验证：19 项 pytest 通过，真实 Worker/API SIGKILL 演示通过。** [测试报告](docs/evidence/tests.xml) · [真实服务证据](docs/evidence/live-demo.json) · [验收范围与未测项](docs/failure-matrix.md)
+**v0.2 新增任务取消、全量任务搜索/分页/归档，修复队列饥饿并补充真实数据库中断与全栈重启演练。** [本轮优化与验收](docs/priority-one.md) · [60 分钟真实故障演练](docs/evidence/recovery-hour.json) · [31 项测试报告](docs/evidence/tests-v0.2.xml) · [真实服务证据](docs/evidence/live-demo.json) · [验收范围与未测项](docs/failure-matrix.md)
 
 ## 本地运行（推荐，已在 Apple silicon Mac 验证）
 
@@ -56,6 +56,8 @@ PYTHON_BIN=python3.12 sh scripts/bootstrap.sh
 .venv/bin/pytest -q --basetemp=.local/pytest
 # 本地服务启动后运行；会终止并重启本项目 Worker/API
 .venv/bin/python scripts/verify_demo.py
+# 独立数据库和子进程，不影响正在演示的服务
+.venv/bin/python scripts/verify_recovery.py --duration 8
 ```
 
 测试使用真实 PostgreSQL，每例独立数据库，自动清理。CI 使用 PostgreSQL service 和 `TEST_DATABASE_URL`，不依赖 pgserver；远程 CI 状态以 GitHub Actions 实际结果为准。[五分钟演示脚本](docs/demo.md)
@@ -70,6 +72,16 @@ curl -X POST http://127.0.0.1:8765/api/tasks \
 ```
 
 同一个幂等键+同一请求返回原任务；同键不同请求返回 409。GET `/api/tasks/{id}` 查状态和尝试；GET `/api/tasks/{id}/events?after_seq=0` 增量读取事件；POST `/api/steps/{id}/retry` 为失败步骤创建新一轮尝试。新请求键控制新任务，缓存指纹控制是否重算，两者互不替代。
+
+## 任务管理与升级
+
+页面支持名称/ID 搜索、状态筛选、历史分页、参数详情、取消和归档恢复。对应接口：
+
+- `GET /api/tasks?q=关键词&status=CANCELLED&view=all&limit=30`，用返回的 `next_cursor` 作为下一页 `before`。
+- `POST /api/tasks/{id}/cancel`：运行中先 CANCELLING，Worker 确认停止后 CANCELLED；失联时明确标记“停止未确认”。
+- `POST /api/tasks/{id}/archive?archived=true`：归档已结束任务；`false` 恢复。归档不删除文件。
+
+从 v0.1 升级须先停止全部旧 API/Workers，再启动新版；schema v2 自动迁移且保留历史。不要同时运行不支持取消的旧 Worker。
 
 ## 工程目录与节省空间
 
@@ -104,4 +116,4 @@ python3 scripts/clean.py --dependencies --apply
 - [设计](docs/architecture.md)：状态、事务、恢复、GPU 和小时级扩展。
 - [两天计划](docs/plan.md) · [Skills 检索及新增清单](docs/skills.md) · [工作记录与 AI 用量](docs/worklog.md)。
 
-这是单机固定 DAG 执行器，保证至少一次执行和有所有权校验的结果提交。未实现任意素材上传、任务取消、多租户鉴权、真实 GPU 或生产级多机调度；不保证 exactly-once 计算。不把未完成的小时级压测或 Compose 验证写成已通过。
+这是单机固定 DAG 执行器，保证至少一次执行和有所有权校验的结果提交。未实现任意素材上传、多租户鉴权、真实 GPU 或生产级多机调度；不保证 exactly-once 计算。不把未完成的小时级压测或 Compose 验证写成已通过。

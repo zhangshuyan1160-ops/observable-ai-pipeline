@@ -107,3 +107,7 @@ GPU 搜索找到 NVIDIA TAO/Kubernetes 等候选，但未把候选摘要当作�
 ## 实施阶段实际使用
 
 本次另读取并采用已有 `fastapi-expert`（接口校验）、`python-testing-patterns`（真实数据库/子进程故障验证）、`docker-development`（备选容器打包）。它们不计入新增的六项。`playwright` 已阅读，实际页面验收使用 Codex 内置 CUA 浏览器及其 Playwright 定位器，未新增 Chromium 下载或 Node 项目依赖。其他“后续启用”候选未实际采用，不作使用声明。
+
+## v0.2 四项优化
+
+沿用已安装的 python-background-jobs（执行/取消协议）与 python-testing-patterns（真实 PostgreSQL 回归和进程故障）。未新增技能，也未引入 Celery/Redis；技能示例不替代本项目的事务和所有权测试。

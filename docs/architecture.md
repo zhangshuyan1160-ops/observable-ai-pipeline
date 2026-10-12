@@ -1,6 +1,6 @@
 # 可恢复动画任务管线设计
 
-状态：下文为 MVP 已实现设计，扩展项明确单列。源码采用 FastAPI + psycopg 显式 SQL + PostgreSQL schema v1；没有引入 SQLAlchemy/Alembic。19 项集成测试和真实服务中断验收见 evidence。
+状态：下文为 MVP 已实现设计，扩展项明确单列。源码采用 FastAPI + psycopg 显式 SQL + PostgreSQL schema v2；没有引入 SQLAlchemy/Alembic。初版 19 项集成测试保留，v0.2 新增回归与真实服务中断验收见 evidence。
 
 ## 执行边界
 
@@ -39,14 +39,14 @@ mock 步骤至少生成可校验的小文件；可用固定图形帧模拟动画
 
 ### Task
 
-`QUEUED → RUNNING → SUCCEEDED | FAILED`。手动重试允许 `FAILED → RUNNING`，历史不清空。
+`QUEUED → RUNNING → SUCCEEDED | FAILED`；活动任务可进入 `CANCELLING → CANCELLED`。手动重试允许 `FAILED → RUNNING`，历史不清空。
 
 - `QUEUED`：已接受但尚未开始。
 - `RUNNING`：任务尚有可推进的步骤；可附派生 `phase=executing/retrying/waiting_resource/recovering`。
 - `SUCCEEDED`：全部步骤成功或命中有效缓存。
 - `FAILED`：存在不可继续的失败，且独立分支已结束、没有正在执行或可继续的步骤。失败分支的后代显示 `BLOCKED`。
 
-聚合规则集中在一个服务中，不让各 API 自行推断。P0 无暂停/取消状态；若加入取消，必须另加 `CANCELLING` 和明确的停止确认逻辑，不能只改界面状态。
+聚合规则集中在一个服务中，不让各 API 自行推断。v0.2 增加 `CANCELLING → CANCELLED`，持久化取消请求、完成时间和停止未确认标记；禁止取消后的提交，等待 Worker 安全退出才确认停止。暂停仍未实现。详见 [取消协议](priority-one.md#3-任务取消)。
 
 ### Step
 
@@ -70,7 +70,7 @@ stateDiagram-v2
 
 ### Attempt
 
-每次实际领取创建新记录：`RUNNING → SUCCEEDED | FAILED | TIMED_OUT | INTERRUPTED`。恢复创建新 attempt，旧的不会被改成新执行。记录 `attempt_no`、`retry_round`、worker、开始/结束、错误类别、租约代次、恢复起点。
+每次实际领取创建新记录：`RUNNING → SUCCEEDED | FAILED | TIMED_OUT | INTERRUPTED | CANCELLED`。恢复创建新 attempt，旧的不会被改成新执行。记录 `attempt_no`、`retry_round`、worker、开始/结束、错误类别、租约代次、恢复起点。
 
 自动尝试默认每个 retry round 最多 3 次（包括首次）；指数退避加抖动，例如约 1、2 秒。`next_run_at` 持久化，不用长时间 sleep 霸占 Worker。手动重试只接受失败步骤，为该步骤创建新 retry round，并恢复被它阻塞的后代；保留已完成的独立步骤。不修改输入；如需修改输入或超过任务总体截止时间，创建新任务。
 
@@ -96,13 +96,13 @@ stateDiagram-v2
 ## 并发领取与故障恢复
 
 1. 所有修改遵循一致锁顺序：task → step → resource slot，避免领取、完成、回收互相死锁。任务行锁仅覆盖短事务，不覆盖计算。
-2. 领取就绪步骤，检查依赖、`next_run_at`、任务 deadline 和资源；在一个事务内新建 attempt、递增 fencing token、占用 slot、标记 RUNNING、记录事件。
+2. 先筛选存在资源匹配且到执行时间的就绪步骤的任务，再限制候选数量，避免早期 GPU 等待/未来重试挡住后续 CPU 工作。领取步骤，检查依赖、`next_run_at`、任务 deadline 和资源；在一个事务内新建 attempt、递增 fencing token、占用 slot、标记 RUNNING、记录事件。
 3. 计算期间每约 2 秒续租，初始租约 10 秒；回收扫描间隔约 1 秒。心跳说明执行所有权仍有效，进度说明业务做了多少，两者不能混为一谈。
 4. 心跳、进度、checkpoint、完成都以 `step.current_attempt_id == attempt_id AND fencing_token == token AND lease_expires_at > DB_NOW` 为条件更新。更新 0 行就停止提交，记录旧 attempt 被拒绝。
 5. 进程崩溃后不会再续租。回收器把过期 attempt 标记 `INTERRUPTED`，在重试预算内安排下一次执行；已成功步骤不变。
 6. 演示目标：其他健康 Worker 存在时，在租约超时 + 扫描间隔 + 退避后接手，通常约 10–15 秒。所有 Worker 都停止时，先重启 Worker 才有执行进展；恢复时间从有可用 Worker 起计算。
 
-回收器也是幂等的，可以由 Worker 周期运行；多个回收者通过相同行锁/条件更新避免重复回收。尝试超时与心跳超时分开：进程活着但计算卡住，仍会触发 attempt timeout；租约续期不得无限延长 attempt deadline。
+回收器也是幂等的，在 Worker 的独立维护协程周期运行，不被耗时计算的等待阻塞；多个回收者通过相同行锁/条件更新避免重复回收。尝试超时与心跳超时分开：进程活着但计算卡住，仍会触发 attempt timeout；租约续期不得无限延长 attempt deadline。
 
 **语义为至少一次执行、受 fencing 保护的状态提交和幂等产物发布。** Worker 可能做完计算却没来得及记成功，恢复后会重算；不能把它称为计算 exactly-once。真实外部收费 API 还需要服务方支持的幂等键。
 
@@ -138,7 +138,7 @@ fingerprint = SHA256(canonical_json({
 | 已实现接口 | 行为 |
 | --- | --- |
 | `POST /api/tasks` | 校验参数与定义；幂等创建；返回 202 + ID |
-| `GET /api/tasks` | 状态过滤与游标分页 |
+| `GET /api/tasks` | 名称/ID 搜索、状态/归档过滤与游标分页 |
 | `GET /api/tasks/{id}` | 当前任务、步骤、进度、等待原因与版本 |
 | `GET /api/tasks/{id}/events?after_seq=N` | 只查该任务已提交事件，按 seq 分页 |
 | `GET /api/steps/{id}/attempts` | 每次尝试、错误、恢复位置、Worker |
@@ -196,3 +196,7 @@ Temporal 对 Activity 超时、重试和心跳有成熟模型，是后续生产�
 - 产物目录采用 UUID 隔离（而非可变文件覆盖）；每个 artifact 记录创建 attempt。失去所有权后新生成的孤儿文件不发布；自动引用计数 GC 尚未实现。
 - 父产物在缓存命中后再次被外部删除，下游会失败；新建相同输入任务可使缓存校验失效并重算。系统不自动回退已成功的父节点，也不能修复磁盘永久损坏。
 - 成功步骤只存最终产物引用，清空检查点；逐批临时 PNG 暂留在本地目录，限制演示任务数量。
+
+## v0.2 补充
+
+取消、归档、schema v2 迁移、调度公平性修复和恢复验收详见 [本轮说明](priority-one.md)。数据库迁移需要先停止全部旧执行者，不支持旧新 Worker 混跑。`batch_delay` 提供独立的批次模拟耗时，允许进行小时级演练；耗时不属于结果语义，不进入缓存指纹。

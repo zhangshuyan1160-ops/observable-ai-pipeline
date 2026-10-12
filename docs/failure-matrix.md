@@ -1,6 +1,6 @@
 # 故障注入与验收矩阵
 
-已实施并通过 19 项 pytest，以及真实运行服务的 HTTP 故障演示。下面保留最初验收设计，并在报告表逐项注明证据及未覆盖范围。一次普通任务成功不能代替所有故障证据。
+初版通过 19 项 pytest；v0.2 扩展为 31 项回归，并新增独立数据库/全服务故障演练。下面保留最初验收设计，并在报告表逐项注明证据及未覆盖范围。一次普通任务成功不能代替所有故障证据。
 
 | ID / 优先级 | 场景与注入 | 预期行为 | 必须观察的证据 |
 | --- | --- | --- | --- |
@@ -58,8 +58,9 @@
 | F03 | 通过 | permanent_failure_blocks_without_retry 两组参数化输入 |
 | F04、F15 | 通过 | budget_exhaustion_then_manual_retry_preserves_history；真实 API 再跑成功 |
 | F05、F09 | 通过 | real_worker_sigkill_checkpoint_recovery + live-demo；实际杀进程后新 Worker 从 4 帧继续，父步骤仍一次 |
-| F06 | 部分覆盖 | SIGKILL 测试在无运行中 GPU Worker 时保留状态，随后启动替代者；整套 API/DB/全部 Workers 停止后重启未独立自动验收 |
-| F07、F13 | 通过协议验证 | stale_fencing_heartbeat_checkpoint_complete_and_orphan_file；模拟“文件已写、提交前失联”窗口，未在该指令点实杀进程 |
+| F06 | 通过 | recovery-short.json：脚本对自己持有的全部 API/CPU/GPU 子进程 SIGKILL，并停止 PostgreSQL；全部重新启动后从检查点继续，其他步骤只一次 |
+| F07 | 通过协议验证 | stale_fencing_heartbeat_checkpoint_complete_and_orphan_file；旧 token 被拒绝 |
+| F13 | 通过真实进程验证 | sigkill_after_file_write_before_state_commit：子进程真实写完文件后停在 complete 前，再被 SIGKILL；新 attempt 恢复且使用不同产物 ID |
 | F08 | 通过 | API 工厂重建测试 + live-demo 实际 API SIGKILL，新 PID 查询同一任务历史 |
 | F10、F11 | 通过 | cache_reuse_and_model_invalidation；参数指纹单测；真实 HTTP 六步缓存 |
 | F12 | 通过 | corrupt_cached_artifact_recomputed；文件损坏后校验失效、重算 |
@@ -69,9 +70,25 @@
 | F19 | 通过 | gpu_slot_waiting_capacity_and_release；等待不消耗 attempt、失败释放槽 |
 | F20 | 部分覆盖 | 超容量请求终止已验证；没有真实 CUDA OOM 或降批重试测试 |
 | F21 | 通过 | corrupt_checkpoint_is_invalidated；指纹/schema/文件校验，不复用损坏帧 |
-| F22 | 未验收 | Worker 代码会捕获数据库异常并放弃提交；未做真实 DB 断网/恢复注入，不能宣称该故障验证通过 |
+| F22 | 通过数据库停机验证 | recovery-short.json：保持 API/Workers 活着，真实停止 PostgreSQL，readyz=503；恢复后旧 attempt INTERRUPTED，检查点继续。没有验证非对称网络分区 |
 | F23 | 通过 | concurrent_cache_miss_publishes_one_valid_reference；允许重复计算，唯一缓存引用有效 |
 
-另测 overall_deadline_without_workers：没有执行进展也能由回收扫描终止超过总体时限的任务。所有测试使用短时配置；没有小时级稳定性或吞吐压测。
+另测 overall_deadline_without_workers：没有执行进展也能由回收扫描终止超过总体时限的任务。pytest 使用短时配置；单任务小时级证据独立保存在 recovery-hour.json，以最终 status 为准；没有高并发吞吐压测。
 
 浏览器验证：创建“首次失败”任务成功；切换步骤后资源/事件保留；查看失败和成功两次记录、动画与下载入口；检查时无 console error/warn。移动端截图和全浏览器兼容性未完整验收。
+
+## v0.2 新增验收
+
+| 范围 | 证据 |
+| --- | --- |
+| 33 个旧 GPU 等待任务不会挡住新 CPU 任务；未来重试不会挡住就绪任务 | test_task_controls.py 的两条 claim 回归；修改前均失败 |
+| 队列取消幂等；运行取消保留检查点与成功上游 | queued_is_idempotent / running_cancel_waits_for_worker |
+| 取消与成功提交并发，取消后不能新增成功事件 | complete_races_cancel_without_publishing_after_cancel |
+| OS 线程尚未完成时保持 CANCELLING，不提前确认停止 | cancellation_waits_for_blocking_thread_before_ack |
+| 取消期间失联明确标记未确认；不重新调度 | cancel_lost_worker_is_explicitly_unconfirmed |
+| 取消 GPU 等待任务不释放别人的槽；取消退避不会再重试 | cancel_gpu_waiter / cancel_retry_wait |
+| 37 条历史分页、字面符号搜索、名称与 ID 搜索、归档恢复、非法状态/游标 | history_search_pagination_archive_and_api_controls |
+| v1 数据保留、并发迁移一次、旧幂等键兼容 | v1_migration_preserves_history_and_idempotency |
+| 浏览器实际取消、归档、搜索、35 条分页、较早记录刷新保留 | priority-one-dashboard.png / priority-one-ui.json |
+
+31 项 pytest 结果保存在 evidence/tests-v0.2.xml；原版 tests.xml 保留历史证据。单任务小时级演练不代表真 GPU 或生产负载验证。

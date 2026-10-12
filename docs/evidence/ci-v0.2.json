@@ -1,0 +1,16 @@
+{
+  "verified_at": "2026-10-12T08:25:21.730409+00:00",
+  "repository": "zhangshuyan1160-ops/observable-ai-pipeline",
+  "branch": "codex/priority-one",
+  "commit": "c5521ba8c297f6a6ef341f7aa3786475e19e2503",
+  "tree": "f8556859313d2bf74a1c75549cfb6b44b49f76c7",
+  "run_id": 38223066167,
+  "job_id": 114723779509,
+  "url": "https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/runs/38223066167",
+  "conclusion": "success",
+  "tests": 31,
+  "test_seconds": 30.38,
+  "lint": "passed",
+  "format": "passed",
+  "scope": "Core implementation; final documentation/archive publication may have a different commit."
+}

@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-12T08:11:56.161240+00:00",
+  "surface": "Codex in-app browser / local development",
+  "status": "PASSED",
+  "checks": [
+    "Create 64-frame task with cache disabled through UI",
+    "Observed CANCELLING before CANCELLED and retained completed steps",
+    "Archive and restore cancelled task",
+    "Search by title and filter CANCELLED / archived",
+    "Load 35 archived tasks across two pages: 30 -> 35; no load-more on last page",
+    "Select earliest archived task and reload; its detail remains selected",
+    "Task parameter and cancellation timestamps visible",
+    "Console warning/error inspection empty"
+  ],
+  "task_id": "b02d5d4c0e69456b88c51253be6f0f41",
+  "pagination_fixture_prefix": "P1分页验收",
+  "screenshot": "priority-one-dashboard.png",
+  "limitations": [
+    "No full cross-browser matrix",
+    "Existing browser viewport only; no separate desktop breakpoint override"
+  ]
+}

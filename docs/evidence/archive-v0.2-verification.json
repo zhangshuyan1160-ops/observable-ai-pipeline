@@ -1,0 +1,11 @@
+{
+  "verified_at": "2026-10-12T08:24:43.282124+00:00",
+  "source_commit": "ff1bf4528418e7606758b72b1b4a59fc285d06ca",
+  "method": "git archive source; fresh venv; bootstrap.sh; pip check; full pytest",
+  "tests": 31,
+  "failures": 0,
+  "errors": 0,
+  "seconds": 19.145,
+  "pip_check": "No broken requirements found",
+  "wheel_contents": "schema v1 + migration v2 + blocking helper + web assets verified"
+}

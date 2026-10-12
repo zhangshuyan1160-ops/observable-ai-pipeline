@@ -1,0 +1,57 @@
+{
+  "started_at": "2026-10-12T07:58:47.617548+00:00",
+  "requested_compute_seconds": 3600.0,
+  "isolated_runtime": ".local/recovery-fb3dc33d45",
+  "injections": [
+    {
+      "type": "database_outage",
+      "frames": 4,
+      "attempt_id": "f0623dd5e7a14aafa8b6c6af3f7ed94a",
+      "pids": {
+        "api": 36105,
+        "cpu": 36106,
+        "gpu": 36107
+      }
+    },
+    {
+      "type": "full_stack_restart",
+      "frames": 8,
+      "attempt_id": "143180da3648449584935669b42259f8",
+      "pids": {
+        "api": 36105,
+        "cpu": 36106,
+        "gpu": 36107
+      }
+    }
+  ],
+  "status": "PASSED",
+  "task_id": "56c00e767c054583bb77b06c73df6ede",
+  "elapsed_seconds": 3607.93,
+  "last_checkpoint_frames": 60,
+  "attempts": [
+    {
+      "status": "INTERRUPTED",
+      "resume_from": 0,
+      "worker_id": "gpu-36107-0d6323",
+      "started_at": "2026-10-12T07:58:47.900075Z",
+      "finished_at": "2026-10-12T08:02:35.532218Z"
+    },
+    {
+      "status": "INTERRUPTED",
+      "resume_from": 4,
+      "worker_id": "gpu-36107-0d6323",
+      "started_at": "2026-10-12T08:02:36.119811Z",
+      "finished_at": "2026-10-12T08:06:24.285151Z"
+    },
+    {
+      "status": "SUCCEEDED",
+      "resume_from": 8,
+      "worker_id": "gpu-70128-3bd67e",
+      "started_at": "2026-10-12T08:06:24.392736Z",
+      "finished_at": "2026-10-12T08:58:54.691441Z"
+    }
+  ],
+  "event_count": 39,
+  "artifact_sha256": "f2cd32f59e2301fe7ffeaa5c082381f7aa95d5514f01ef24b4ea362bf2adf2d2",
+  "completed_at": "2026-10-12T08:58:55.443002+00:00"
+}
