@@ -152,6 +152,21 @@ class Engine:
                 step["artifact"] = await one(
                     c, "SELECT * FROM artifacts WHERE id=%s", (step["artifact_id"],)
                 )
+                step["cache_lineage"] = None
+                if step["status"] == "CACHED" and step["artifact"]:
+                    # Follow the artifact's producing attempt, not the mutable cache index.
+                    # validated_at is historical evidence, never a fresh file health claim.
+                    step["cache_lineage"] = await one(
+                        c,
+                        """SELECT a.task_id,t.params->>'title' AS title,s.key AS step_key,
+                        (SELECT e.created_at FROM events e WHERE e.task_id=%s
+                         AND e.step_key=%s AND e.type='step.cached'
+                         AND e.payload->>'artifact_id'=%s
+                         ORDER BY e.seq DESC LIMIT 1) AS validated_at
+                        FROM attempts a JOIN tasks t ON t.id=a.task_id
+                        JOIN steps s ON s.id=a.step_id WHERE a.id=%s""",
+                        (task_id, step["key"], step["artifact_id"], step["artifact"]["attempt_id"]),
+                    )
             statuses = {s["status"] for s in task["steps"]}
             task["phase"] = (
                 "cancelling"

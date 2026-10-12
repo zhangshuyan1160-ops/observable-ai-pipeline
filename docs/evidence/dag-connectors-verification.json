@@ -1,0 +1,403 @@
+{
+  "checked_at": "2026-10-12T13:18:42.408Z",
+  "scope": "animation-v1 connector geometry and responsive UI; no task creation or backend changes",
+  "measurements": [
+    {
+      "documentWidth": 1440,
+      "pipelineWidth": 1116,
+      "routes": [
+        {
+          "arrow": true,
+          "d": "M211.59375 107.5 H239.59375",
+          "entryClearance": 4,
+          "key": "probe-extract",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M433.1953125 107.5 H447.1953125",
+          "entryClearance": null,
+          "key": "extract-split",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M447.1953125 107.5 V60 H461.1953125",
+          "entryClearance": 4,
+          "key": "split-stylize",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M447.1953125 107.5 V155 H461.1953125",
+          "entryClearance": 4,
+          "key": "split-thumbnail",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M654.796875 60 H682.796875",
+          "entryClearance": 4,
+          "key": "stylize-compose",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M876.3984375 60 H890.3984375 V107.5",
+          "entryClearance": null,
+          "key": "compose-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": false,
+          "d": "M654.796875 155 H890.3984375 V107.5",
+          "entryClearance": null,
+          "key": "thumbnail-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M890.3984375 107.5 H904.3984375",
+          "entryClearance": 4,
+          "key": "merge-package",
+          "rightFacing": true,
+          "verticalError": 0
+        }
+      ],
+      "scrollLeft": 0,
+      "viewport": {
+        "height": 1000,
+        "width": 1440
+      }
+    },
+    {
+      "documentWidth": 1024,
+      "pipelineWidth": 880,
+      "routes": [
+        {
+          "arrow": true,
+          "d": "M164.3984375 107.5 H192.3984375",
+          "entryClearance": 4,
+          "key": "probe-extract",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M338.796875 107.5 H352.796875",
+          "entryClearance": null,
+          "key": "extract-split",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V60 H366.796875",
+          "entryClearance": 4,
+          "key": "split-stylize",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V155 H366.796875",
+          "entryClearance": 4,
+          "key": "split-thumbnail",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M513.1953125 60 H541.1953125",
+          "entryClearance": 4,
+          "key": "stylize-compose",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M687.59375 60 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "compose-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": false,
+          "d": "M513.1953125 155 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "thumbnail-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M701.59375 107.5 H715.59375",
+          "entryClearance": 4,
+          "key": "merge-package",
+          "rightFacing": true,
+          "verticalError": 0
+        }
+      ],
+      "scrollLeft": 0,
+      "viewport": {
+        "height": 900,
+        "width": 1024
+      }
+    },
+    {
+      "documentWidth": 1024,
+      "pipelineWidth": 880,
+      "routes": [
+        {
+          "arrow": true,
+          "d": "M164.3984375 107.5 H192.3984375",
+          "entryClearance": 4,
+          "key": "probe-extract",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M338.796875 107.5 H352.796875",
+          "entryClearance": null,
+          "key": "extract-split",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V60 H366.796875",
+          "entryClearance": 4,
+          "key": "split-stylize",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V155 H366.796875",
+          "entryClearance": 4,
+          "key": "split-thumbnail",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M513.1953125 60 H541.1953125",
+          "entryClearance": 4,
+          "key": "stylize-compose",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M687.59375 60 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "compose-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": false,
+          "d": "M513.1953125 155 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "thumbnail-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M701.59375 107.5 H715.59375",
+          "entryClearance": 4,
+          "key": "merge-package",
+          "rightFacing": true,
+          "verticalError": 0
+        }
+      ],
+      "scrollLeft": 94,
+      "viewport": {
+        "height": 900,
+        "width": 1024
+      }
+    },
+    {
+      "documentWidth": 390,
+      "pipelineWidth": 880,
+      "routes": [
+        {
+          "arrow": true,
+          "d": "M164.3984375 107.5 H192.3984375",
+          "entryClearance": 4,
+          "key": "probe-extract",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M338.796875 107.5 H352.796875",
+          "entryClearance": null,
+          "key": "extract-split",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V60 H366.796875",
+          "entryClearance": 4,
+          "key": "split-stylize",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M352.796875 107.5 V155 H366.796875",
+          "entryClearance": 4,
+          "key": "split-thumbnail",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M513.1953125 60 H541.1953125",
+          "entryClearance": 4,
+          "key": "stylize-compose",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M687.59375 60 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "compose-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": false,
+          "d": "M513.1953125 155 H701.59375 V107.5",
+          "entryClearance": null,
+          "key": "thumbnail-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M701.59375 107.5 H715.59375",
+          "entryClearance": 4,
+          "key": "merge-package",
+          "rightFacing": true,
+          "verticalError": 0
+        }
+      ],
+      "scrollLeft": 500,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    },
+    {
+      "documentWidth": 1440,
+      "pipelineWidth": 1116,
+      "routes": [
+        {
+          "arrow": true,
+          "d": "M211.59375 107.5 H239.59375",
+          "entryClearance": 4,
+          "key": "probe-extract",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M433.1953125 107.5 H447.1953125",
+          "entryClearance": null,
+          "key": "extract-split",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M447.1953125 107.5 V60 H461.1953125",
+          "entryClearance": 4,
+          "key": "split-stylize",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M447.1953125 107.5 V155 H461.1953125",
+          "entryClearance": 4,
+          "key": "split-thumbnail",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": true,
+          "d": "M654.796875 60 H682.796875",
+          "entryClearance": 4,
+          "key": "stylize-compose",
+          "rightFacing": true,
+          "verticalError": 0
+        },
+        {
+          "arrow": false,
+          "d": "M876.3984375 60 H890.3984375 V107.5",
+          "entryClearance": null,
+          "key": "compose-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": false,
+          "d": "M654.796875 155 H890.3984375 V107.5",
+          "entryClearance": null,
+          "key": "thumbnail-merge",
+          "rightFacing": null,
+          "verticalError": null
+        },
+        {
+          "arrow": true,
+          "d": "M890.3984375 107.5 H904.3984375",
+          "entryClearance": 4,
+          "key": "merge-package",
+          "rightFacing": true,
+          "verticalError": 0
+        }
+      ],
+      "scrollLeft": 0,
+      "viewport": {
+        "height": 1000,
+        "width": 1440
+      }
+    }
+  ],
+  "console": [],
+  "screenshots": [
+    "dag-connectors.png",
+    "dag-connectors-mobile.png"
+  ],
+  "checks": {
+    "node_syntax": "passed",
+    "prettier": "3.6.2 passed",
+    "git_diff_check": "passed"
+  },
+  "backend_suite_rerun": false,
+  "previous_quality_report": "quality-verification.json remains evidence for the previous source snapshot",
+  "source_sha256": {
+    "src/pipeline/web/app.js": "45e1f651a6bfb850a87c4611528fc8f1a8bd45e61f7af8eec83d88b3ec77fb95",
+    "src/pipeline/web/create-form.mjs": "216b4ed57de2bbcd0e952d7802f8112c493e85b5c3ac09c2c2a15aaa7bd88a57",
+    "src/pipeline/web/create-intent.mjs": "21bc2aa50c683f8deeaac0e7085d7e55d1370e1ce641fd9967ef89fe2ebbeb9a",
+    "src/pipeline/web/details.mjs": "7a336a02ccf66a2f55c954eb5ea1b8988df8a7e4eb47ee61869480c49d38acb8",
+    "src/pipeline/web/dom.mjs": "b0c4004e235c9a8878e63dd01f4119d957576dbadc98a00172d50ae5d21094a7",
+    "src/pipeline/web/index.html": "4eca647e7755a2f571b797b9526a3422efe9ae43c0c63f04c33dd009d9c69de4",
+    "src/pipeline/web/pipeline-edges.mjs": "3054ed6d3bd8782541515469d12a9e4b2fa7187fd7bf4e20193eb7108c468bd3",
+    "src/pipeline/web/style.css": "9244ee86d39d4f5f08f65024edd1c913fa5b4c3fc517b4e575425c7d2089bdf1"
+  }
+}

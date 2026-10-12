@@ -24,7 +24,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="Observable AI Pipeline",
-        version="0.2.0",
+        version="0.3.0",
         lifespan=lifespan,
         description="本地 mock 动画处理。持久化、重试、恢复与产物均真实运行。",
     )

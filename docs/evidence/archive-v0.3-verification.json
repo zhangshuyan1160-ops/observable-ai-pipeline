@@ -1,0 +1,12 @@
+{
+  "commit": "162a34322018443ccdeeef4070c665cf1167f177",
+  "archive": "observable-ai-pipeline-v0.3.0.zip",
+  "bytes": 622707,
+  "sha256": "28e6f2831e742700f5c0432f7d83d09bb224c25b744e940cbaba1b0768a3b497",
+  "commit_scope": "Local source snapshot; GitHub publication commit is separate.",
+  "source_files": 95,
+  "all_entries_match_source_commit": true,
+  "zip_crc_passed": true,
+  "runtime_data_excluded": true,
+  "fresh_environment_install_rerun": false
+}

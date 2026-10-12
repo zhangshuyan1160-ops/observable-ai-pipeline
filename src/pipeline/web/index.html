@@ -1,1 +1,285 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Frameflow · 任务观察台</title><link rel="stylesheet" href="/static/style.css"></head><body><div id="app">正在连接任务管线…</div><script src="/static/app.js" defer></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frameflow · 动画任务执行与恢复</title>
+    <link rel="stylesheet" href="/static/style.css?v=20261012-edges" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="app-shell">
+        <aside class="sidebar">
+          <div class="brand">
+            <span class="brand-mark">▧</span>
+            <div>Frameflow<small>动画任务观察台</small></div>
+          </div>
+          <div class="side-title">工作空间 / 本地开发</div>
+          <div class="side-heading">
+            任务中心 <span id="task-count">0</span>
+          </div>
+          <form id="history-filters" class="history-filters" role="search">
+            <label for="task-search">查找任务</label
+            ><input
+              id="task-search"
+              type="search"
+              placeholder="名称或任务 ID"
+              maxlength="100"
+            />
+            <div class="filter-row">
+              <select id="status-filter" aria-label="任务状态">
+                <option value="">全部状态</option>
+                <option value="QUEUED">已入队</option>
+                <option value="RUNNING">执行中</option>
+                <option value="CANCELLING">取消中</option>
+                <option value="CANCELLED">已取消</option>
+                <option value="SUCCEEDED">已完成</option>
+                <option value="FAILED">失败</option>
+              </select>
+              <select id="archive-filter" aria-label="归档范围">
+                <option value="active">未归档</option>
+                <option value="archived">已归档</option>
+                <option value="all">全部任务</option>
+              </select>
+            </div>
+          </form>
+          <nav class="task-list" id="task-list" aria-label="任务列表"></nav>
+          <button id="load-more" class="load-more" hidden>加载更早任务</button>
+          <div class="side-footer">
+            <b>● PostgreSQL 持久化</b><br />步骤重试 · 批次恢复 · 结果复用<br /><a
+              href="/docs"
+              target="_blank"
+              rel="noopener"
+              >查看 API 文档</a
+            >
+          </div>
+        </aside>
+        <main class="workspace">
+          <header class="topbar">
+            <span
+              >工作空间 <span aria-hidden="true"> / </span>
+              <strong>动画处理管线</strong></span
+            ><span class="connection" id="connection"
+              ><i class="dot"></i>正在连接</span
+            >
+          </header>
+          <div class="content">
+            <div class="page-heading">
+              <div>
+                <h1>动画任务执行与恢复</h1>
+                <p class="description">
+                  独立 Worker 执行；步骤失败可重试，进程中断后从检查点继续。
+                </p>
+              </div>
+              <div class="actions">
+                <button id="retry-demo">自动重试</button
+                ><button id="interrupt-help">进程中断恢复</button
+                ><button id="reuse-demo">结果复用</button
+                ><button id="open-create" class="primary">＋ 新建任务</button>
+              </div>
+            </div>
+            <div id="pending-create" class="state-notice" hidden>
+              <strong>提交结果待确认</strong>
+              <p>
+                原请求已保存在当前标签页，刷新不会改变幂等键。可重试确认原任务。
+              </p>
+              <button id="resume-create">查看原请求并重试</button>
+            </div>
+            <div id="task-content"></div>
+            <div class="footer-note">
+              <span>计算使用 MOCK · 状态、检查点与文件真实持久化</span
+              ><span
+                >每 1.2 秒更新 ·
+                <a href="/metrics" target="_blank" rel="noopener"
+                  >查看指标</a
+                ></span
+              >
+            </div>
+          </div>
+        </main>
+      </div>
+      <dialog id="create-dialog">
+        <form id="create-form">
+          <div class="dialog-title">
+            <h2>新建动画处理任务</h2>
+            <button type="button" id="close-create" aria-label="关闭">×</button>
+          </div>
+          <p id="create-context" class="form-note form-message"></p>
+          <div
+            id="intent-status"
+            class="state-notice form-message"
+            hidden
+          ></div>
+          <fieldset id="create-fields" class="form-body">
+            <label class="field full"
+              >任务名称<input name="title" maxlength="80" required
+            /></label>
+            <label class="field"
+              >演示素材<select name="asset">
+                <option value="orbit">轨道运动 / Orbit</option>
+                <option value="bounce">弹跳运动 / Bounce</option>
+                <option value="invalid">无效素材（永久失败）</option>
+              </select></label
+            >
+            <label class="field"
+              >帧数<input name="frames" type="number" min="4" max="64" required
+            /></label>
+            <label class="field"
+              >模型版本<input name="model_version" maxlength="32" required
+            /></label>
+            <label class="field"
+              >随机种子<input
+                name="seed"
+                type="number"
+                min="0"
+                max="65535"
+                required
+            /></label>
+            <label class="field"
+              >每批模拟耗时（秒）<input
+                name="batch_delay"
+                type="number"
+                min="0.01"
+                max="900"
+                step="any"
+                placeholder="留空则沿用步骤耗时"
+            /></label>
+            <label class="field"
+              >故障预设<select name="fault_mode">
+                <option value="none">无故障</option>
+                <option value="transient_once">首次失败，自动重试</option>
+                <option value="exhaust_once">本轮全部失败，手动恢复</option>
+                <option value="permanent">永久失败</option>
+                <option value="timeout_once">首次卡住，超时恢复</option>
+              </select></label
+            >
+            <label class="check-field full"
+              ><input
+                type="checkbox"
+                name="cache_enabled"
+              />允许复用相同输入与版本的结果</label
+            >
+            <details class="advanced full">
+              <summary>高级设置 · 超时、故障步骤与资源</summary>
+              <div class="advanced-grid">
+                <label class="field"
+                  >普通步骤模拟耗时（秒）<input
+                    name="step_delay"
+                    type="number"
+                    min="0.01"
+                    max="10"
+                    step="any"
+                    required
+                /></label>
+                <label class="field"
+                  >每轮最多尝试<input
+                    name="max_attempts"
+                    type="number"
+                    min="1"
+                    max="5"
+                    required
+                /></label>
+                <label class="field"
+                  >单次执行时限（秒）<input
+                    name="attempt_timeout"
+                    type="number"
+                    min="0.1"
+                    max="14400"
+                    step="any"
+                    required
+                /></label>
+                <label class="field"
+                  >任务总体时限（秒）<input
+                    name="task_timeout"
+                    type="number"
+                    min="1"
+                    max="14400"
+                    step="any"
+                    required
+                /></label>
+                <label class="field"
+                  >模拟显存需求（MiB）<input
+                    name="gpu_memory_mb"
+                    type="number"
+                    min="256"
+                    max="32768"
+                    required
+                /></label>
+                <label class="field"
+                  >故障步骤<select name="fault_step">
+                    <option value="probe">素材检查</option>
+                    <option value="extract">生成帧序列</option>
+                    <option value="stylize">逐批风格化</option>
+                    <option value="thumbnail">缩略图</option>
+                    <option value="compose">合成动画</option>
+                    <option value="package">打包交付</option>
+                  </select></label
+                >
+              </div>
+            </details>
+            <p id="fault-note" class="form-note full">
+              风格化每 4 帧保存检查点。GPU
+              为单槽模拟资源。启用缓存时，命中步骤不执行故障注入；要观察故障请关闭缓存。超时预设不会自动修改执行时限。
+            </p>
+          </fieldset>
+          <p
+            id="create-error"
+            class="error-box form-message"
+            role="alert"
+            hidden
+          ></p>
+          <div class="dialog-actions">
+            <button type="button" id="new-intent" hidden>
+              另建任务（新请求）</button
+            ><button type="button" id="cancel-create">关闭</button
+            ><button class="primary" type="submit" id="submit-create">
+              创建并执行
+            </button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="help-dialog">
+        <div class="dialog-title">
+          <h2>验证真正的进程中断</h2>
+          <button id="close-help" aria-label="关闭">×</button>
+        </div>
+        <div class="form-body">
+          <div class="form-note full">
+            <button id="interrupt-preset">准备 32 帧中断演示任务</button>
+            <p>
+              将预填 32 帧、每批 4
+              秒、关闭缓存的参数。提交后，待风格化步骤保存检查点后，在项目目录运行：
+            </p>
+            <p><code>.venv/bin/python scripts/dev.py interrupt gpu</code></p>
+            <button id="copy-interrupt">复制中断命令</button
+            >本地启动器会对自己的两个 GPU Worker 发送 SIGKILL 并重启它们。约
+            10–15 秒后，新的执行尝试从检查点继续。右侧资源面板可看到新 Worker。
+            <p>
+              适用于
+              <code>scripts/dev.py start</code>
+              启动方式。界面不会提供任意进程终止接口。
+            </p>
+          </div>
+        </div>
+      </dialog>
+      <dialog id="cancel-dialog">
+        <div class="dialog-title">
+          <h2>取消这个任务？</h2>
+          <button id="close-cancel" aria-label="关闭">×</button>
+        </div>
+        <div class="form-body">
+          <p class="form-note full" id="cancel-description"></p>
+          <p class="form-note full">
+            后续步骤将停止领取，运行中的步骤会在安全边界停止。已完成的产物和执行历史会保留。取消后如需再运行，可以复制参数创建新任务。
+          </p>
+        </div>
+        <div class="dialog-actions">
+          <button id="keep-task">继续执行任务</button
+          ><button id="confirm-cancel" class="danger">确认取消</button>
+        </div>
+      </dialog>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    <script src="/static/app.js?v=20261012-edges" type="module"></script>
+  </body>
+</html>

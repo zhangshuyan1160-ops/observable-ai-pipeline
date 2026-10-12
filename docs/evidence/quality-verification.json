@@ -1,0 +1,244 @@
+{
+  "recorded_at": "2026-10-12T12:49:15.824655+00:00",
+  "base_commit": "f32cb6dd2a6bd45993ac76f75592099f67c4ee3a",
+  "branch": "codex/submission-quality",
+  "publication": "local only; published v0.2 unchanged",
+  "automated": {
+    "pytest": {
+      "passed": 33,
+      "skipped": 0,
+      "seconds": 15.49,
+      "report": "tests-quality.xml"
+    },
+    "node": {
+      "passed": 4,
+      "report": "tests-frontend-quality.tap"
+    },
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "prettier_3_6_2": "passed",
+    "git_diff_check": "passed"
+  },
+  "browser": {
+    "driver": "Codex CUA; agent-operated checks, not candidate personal manual work",
+    "lost_response": {
+      "task_id": "3e59da75a8b746a2ac17809ed758ad4b",
+      "first_202_reply_dropped": true,
+      "reloaded_page": true,
+      "original_fields_locked": true,
+      "same_key_and_payload": true,
+      "reused_request": true,
+      "db_tasks_for_key": 1,
+      "task_created_events": 1,
+      "records": [
+        {
+          "at": "2026-10-12T12:34:59.499170+00:00",
+          "response": {
+            "task_id": "3e59da75a8b746a2ac17809ed758ad4b",
+            "reused_request": false,
+            "status_url": "/api/tasks/3e59da75a8b746a2ac17809ed758ad4b"
+          },
+          "dropped": true,
+          "idempotency_key": "8f1ad9c5-c5b0-4d20-9f25-72e81c3ee9a7",
+          "params": {
+            "title": "质量验收 / 响应丢失",
+            "asset": "orbit",
+            "frames": 16,
+            "seed": 42,
+            "model_version": "mock-v1",
+            "step_delay": 1.2,
+            "cache_enabled": true,
+            "fault_step": "stylize",
+            "fault_mode": "none",
+            "max_attempts": 3,
+            "attempt_timeout": 120,
+            "task_timeout": 3600,
+            "gpu_memory_mb": 4096
+          }
+        },
+        {
+          "at": "2026-10-12T12:35:26.478065+00:00",
+          "response": {
+            "task_id": "3e59da75a8b746a2ac17809ed758ad4b",
+            "reused_request": true,
+            "status_url": "/api/tasks/3e59da75a8b746a2ac17809ed758ad4b"
+          },
+          "dropped": false,
+          "idempotency_key": "8f1ad9c5-c5b0-4d20-9f25-72e81c3ee9a7",
+          "params": {
+            "title": "质量验收 / 响应丢失",
+            "asset": "orbit",
+            "frames": 16,
+            "seed": 42,
+            "model_version": "mock-v1",
+            "step_delay": 1.2,
+            "cache_enabled": true,
+            "fault_step": "stylize",
+            "fault_mode": "none",
+            "max_attempts": 3,
+            "attempt_timeout": 120,
+            "task_timeout": 3600,
+            "gpu_memory_mb": 4096
+          }
+        }
+      ]
+    },
+    "copy": {
+      "source_id": "875c84631e39413aa58a0d1a41d41b32",
+      "copy_id": "08e9588291c44c438fd3247a985f0901",
+      "params_identical": true,
+      "params": {
+        "seed": 314,
+        "asset": "orbit",
+        "title": "质量验收 / 手动恢复与复制",
+        "frames": 7,
+        "fault_mode": "exhaust_once",
+        "fault_step": "stylize",
+        "step_delay": 0.1,
+        "batch_delay": 0.2,
+        "max_attempts": 2,
+        "task_timeout": 7200.0,
+        "cache_enabled": false,
+        "gpu_memory_mb": 6144,
+        "model_version": "mock-v1",
+        "attempt_timeout": 45.0
+      }
+    },
+    "manual_recovery": {
+      "task_ids": [
+        "875c84631e39413aa58a0d1a41d41b32",
+        "08e9588291c44c438fd3247a985f0901"
+      ],
+      "before": "FAILED",
+      "after": "SUCCEEDED",
+      "attempts": [
+        [
+          0,
+          1,
+          "FAILED"
+        ],
+        [
+          0,
+          2,
+          "FAILED"
+        ],
+        [
+          1,
+          1,
+          "SUCCEEDED"
+        ]
+      ],
+      "preserved_steps": [
+        "probe",
+        "extract",
+        "thumbnail"
+      ],
+      "preserved_attempts_and_artifacts": true,
+      "step_pending_translation_seen": "重新等待依赖"
+    },
+    "reuse": {
+      "source_id": "8ce9b983bc58437db041ef9b003a99c1",
+      "task_id": "4898bb0e64f04a479367fc3e377505d0",
+      "cached_steps": 6,
+      "compute_attempts": 0,
+      "lineage": {
+        "probe": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "probe",
+          "validated_at": "2026-10-12T12:40:11.251125Z"
+        },
+        "extract": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "extract",
+          "validated_at": "2026-10-12T12:40:11.561249Z"
+        },
+        "stylize": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "stylize",
+          "validated_at": "2026-10-12T12:40:11.867067Z"
+        },
+        "thumbnail": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "thumbnail",
+          "validated_at": "2026-10-12T12:40:11.873540Z"
+        },
+        "compose": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "compose",
+          "validated_at": "2026-10-12T12:40:11.875533Z"
+        },
+        "package": {
+          "task_id": "8ce9b983bc58437db041ef9b003a99c1",
+          "title": "质量验收 / 手动恢复与复制",
+          "step_key": "package",
+          "validated_at": "2026-10-12T12:40:12.185489Z"
+        }
+      }
+    },
+    "polling": {
+      "task_id": "b970e046d3914f3f943ff5ff7848c601",
+      "focus_during_and_after": "原始事件 · #16 summary",
+      "parameters_and_attempt_details_stayed_open": true,
+      "error_details_stayed_open_across_manual_retry": true,
+      "form_draft_and_asset_focus_retained": true
+    },
+    "responsive": {
+      "desktop": [
+        1440,
+        1000
+      ],
+      "narrow": [
+        390,
+        844
+      ],
+      "narrow_document_width": 390,
+      "narrow_dag_container_width": 358,
+      "narrow_dag_content_width": 820,
+      "document_horizontal_overflow": false,
+      "note": "visible tab initially ignored viewport override; verified requested dimensions on background test tab. Chrome connection timed out, so no cross-browser claim."
+    },
+    "console": "No error/warn in final normal page. Earlier response-loss fixture intentionally generated a failed fetch.",
+    "screenshots": [
+      "quality-desktop.png",
+      "quality-pending.png",
+      "quality-cache.png",
+      "quality-mobile.png",
+      "quality-mobile-form.png"
+    ]
+  },
+  "task_ids_created_this_iteration": [
+    "b970e046d3914f3f943ff5ff7848c601",
+    "4898bb0e64f04a479367fc3e377505d0",
+    "8ce9b983bc58437db041ef9b003a99c1",
+    "3e59da75a8b746a2ac17809ed758ad4b",
+    "08e9588291c44c438fd3247a985f0901",
+    "875c84631e39413aa58a0d1a41d41b32"
+  ],
+  "history_not_rerun": [
+    "v0.2 hour exercise (3607.93s)",
+    "Linux CI",
+    "fresh archive installation"
+  ],
+  "unverified": [
+    "true GPU",
+    "multi-host scheduling",
+    "load test",
+    "Compose startup",
+    "full accessibility audit",
+    "cross-browser compatibility"
+  ],
+  "code_sha256": {
+    "src/pipeline/web/app.js": "bc98fe52ac1c769ede5356e0c55bcd3dfaa1767ad16be3830afaf321bec62a60",
+    "src/pipeline/web/create-form.mjs": "216b4ed57de2bbcd0e952d7802f8112c493e85b5c3ac09c2c2a15aaa7bd88a57",
+    "src/pipeline/web/create-intent.mjs": "21bc2aa50c683f8deeaac0e7085d7e55d1370e1ce641fd9967ef89fe2ebbeb9a",
+    "src/pipeline/web/details.mjs": "7a336a02ccf66a2f55c954eb5ea1b8988df8a7e4eb47ee61869480c49d38acb8",
+    "src/pipeline/web/dom.mjs": "b0c4004e235c9a8878e63dd01f4119d957576dbadc98a00172d50ae5d21094a7",
+    "src/pipeline/web/index.html": "57c0c956307ea54c395d41a61ea2ceaef45655e67c5b658de066ab296eab3b4f",
+    "src/pipeline/web/style.css": "0ce77c5e1df73a2a708833c10e4b293feaed7448f40123380edfd1da92eb21c5"
+  }
+}

@@ -111,3 +111,7 @@ GPU 搜索找到 NVIDIA TAO/Kubernetes 等候选，但未把候选摘要当作�
 ## v0.2 四项优化
 
 沿用已安装的 python-background-jobs（执行/取消协议）与 python-testing-patterns（真实 PostgreSQL 回归和进程故障）。未新增技能，也未引入 Celery/Redis；技能示例不替代本项目的事务和所有权测试。
+
+## 提交前质量收尾
+
+本轮读取并应用 `pdf:pdf`（读取三页建议、提取文字并渲染核对）及 `python-testing-patterns`（有针对性的 PostgreSQL/HTTP 回归）。沿用现有技能，未新增安装。Prettier 3.6.2 从 npm 官方注册表获取，仅用于本地格式化，存于被忽略的 `.local/tools/`，不引入运行依赖或前端框架。

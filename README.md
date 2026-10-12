@@ -1,10 +1,12 @@
 # Frameflow · 可恢复的 AI 动画任务管线
 
-[公开源码](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline) · [下载交付 ZIP](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/raw/refs/heads/main/delivery/observable-ai-pipeline-v0.2.0.zip) · [提交说明](docs/submission.md)
+[公开源码](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline) · [下载 v0.3.0 ZIP](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/raw/refs/heads/main/delivery/observable-ai-pipeline-v0.3.0.zip) · [提交说明](docs/submission.md)
 
 题 D 的两天 MVP。计算和 GPU 使用 MOCK，状态事务、独立 Worker、进程中断、检查点和文件产物真实执行。无需服务器、CUDA、大模型、Node 构建链或 Docker Desktop。
 
-![任务看板](docs/evidence/priority-one-dashboard.png)
+**v0.3.0：稳定创建幂等、完整参数复制、恢复诊断、缓存来源及响应式管线连线。** 本地 33 项 pytest 和 4 项前端测试通过；[改动与验收](docs/submission-quality.md) · [GitHub Actions](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/workflows/ci.yml)。
+
+![任务管线](docs/evidence/dag-connectors.png)
 
 ## 五分钟了解
 
@@ -20,7 +22,7 @@ flowchart LR
   E --> F
 ```
 
-**v0.2 新增任务取消、全量任务搜索/分页/归档，修复队列饥饿并补充真实数据库中断与全栈重启演练。** [本轮优化与验收](docs/priority-one.md) · [60 分钟真实故障演练](docs/evidence/recovery-hour.json) · [31 项测试报告](docs/evidence/tests-v0.2.xml) · [真实服务证据](docs/evidence/live-demo.json) · [验收范围与未测项](docs/failure-matrix.md)
+**已实现任务取消、搜索/分页/归档、步骤失败恢复与缓存复用。** v0.3 补充稳定的创建幂等键、完整参数复制、错误/阻塞/恢复诊断及缓存来源。v0.2 已验证队列公平性和数据库中断恢复。 [v0.2 优化与验收](docs/priority-one.md) · [60 分钟真实故障演练](docs/evidence/recovery-hour.json) · [历史 v0.2 的 31 项测试报告](docs/evidence/tests-v0.2.xml) · [真实服务证据](docs/evidence/live-demo.json) · [验收范围与未测项](docs/failure-matrix.md)
 
 ## 本地运行（推荐，已在 Apple silicon Mac 验证）
 
@@ -53,6 +55,7 @@ PYTHON_BIN=python3.12 sh scripts/bootstrap.sh
 ```bash
 .venv/bin/ruff check src tests scripts
 .venv/bin/ruff format --check src tests scripts
+node --test tests/frontend/create-intent.test.mjs   # 验证时需要 Node 22+，运行应用不需要
 .venv/bin/pytest -q --basetemp=.local/pytest
 # 本地服务启动后运行；会终止并重启本项目 Worker/API
 .venv/bin/python scripts/verify_demo.py
@@ -60,7 +63,14 @@ PYTHON_BIN=python3.12 sh scripts/bootstrap.sh
 .venv/bin/python scripts/verify_recovery.py --duration 8
 ```
 
-测试使用真实 PostgreSQL，每例独立数据库，自动清理。CI 使用 PostgreSQL service 和 `TEST_DATABASE_URL`，不依赖 pgserver；远程 CI 状态以 GitHub Actions 实际结果为准。[五分钟演示脚本](docs/demo.md)
+测试使用真实 PostgreSQL，每例独立数据库，自动清理。新增前端/真实 HTTP 联合测试需要 Node 22+；可通过 NODE_BIN 指定路径，无 Node 时该项明确跳过。CI 配置 Node 22，并运行 4 项前端测试和 33 项 pytest。CI 使用 PostgreSQL service 和 `TEST_DATABASE_URL`，不依赖 pgserver；远程 CI 状态以 GitHub Actions 实际结果为准。[五分钟演示脚本](docs/demo.md)
+
+## 关键取舍
+
+- PostgreSQL 同时管理状态和就绪队列，用短事务避免队列/数据库双写。适用于本例的低吞吐单机范围。
+- 计算放在独立 Worker；心跳租约和 fencing 控制谁可以提交，保证至少一次执行，不承诺 exactly-once 计算。
+- 四帧检查点平衡写入成本与故障后重做量；文件先原子写入，再登记成功，孤儿文件不算成功结果。
+- 原生界面按 1.2 秒轮询展示数据库事实，保留焦点和详情展开；不增加前端构建依赖。
 
 ## 接口示例
 
@@ -117,3 +127,5 @@ python3 scripts/clean.py --dependencies --apply
 - [两天计划](docs/plan.md) · [Skills 检索及新增清单](docs/skills.md) · [工作记录与 AI 用量](docs/worklog.md)。
 
 这是单机固定 DAG 执行器，保证至少一次执行和有所有权校验的结果提交。未实现任意素材上传、多租户鉴权、真实 GPU 或生产级多机调度；不保证 exactly-once 计算。不把未完成的小时级压测或 Compose 验证写成已通过。
+
+本项目使用 Codex 辅助方案梳理、实现、测试和文档；职责、Token 快照及未计时说明见 [提交说明](docs/submission.md#5-ai-coding-工具token-与主要消耗)。
