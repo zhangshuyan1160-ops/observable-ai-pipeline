@@ -402,3 +402,61 @@ async def test_rollback_does_not_publish_event_or_state(engine, fast_request):
             raise RuntimeError("transaction aborted")
     assert (await engine.task(task_id))["status"] == "QUEUED"
     assert await engine.events(task_id) == before
+
+
+async def test_sigkill_after_file_write_before_state_commit(
+    engine, settings, fast_request, tmp_path
+):
+    """Crash a real process at the artifact/publication boundary, not just a stale call."""
+    import json
+
+    task_id = await submit(engine, fast_request)
+    marker = tmp_path / "unpublished.json"
+    env = {
+        **os.environ,
+        "DATABASE_URL": settings.database_url,
+        "ARTIFACT_ROOT": str(settings.artifact_root),
+        "LEASE_SECONDS": str(settings.lease_seconds),
+        "HEARTBEAT_SECONDS": str(settings.heartbeat_seconds),
+        "PUBLISH_MARKER": str(marker),
+    }
+    program = """
+import asyncio, json, os
+from pathlib import Path
+from pipeline.config import Settings
+from pipeline.engine import Engine
+from pipeline.pipelines.animation import execute
+async def main():
+    engine = Engine(Settings.from_env())
+    job = await engine.claim("publication-crash", "cpu")
+    artifact = await execute(engine, job)
+    Path(os.environ["PUBLISH_MARKER"]).write_text(json.dumps(artifact))
+    await asyncio.Event().wait()  # Parent kills here, before the complete transaction.
+    await engine.complete(job, artifact)
+asyncio.run(main())
+"""
+    with (tmp_path / "publication.log").open("w") as log:
+        child = subprocess.Popen([sys.executable, "-c", program], env=env, stdout=log, stderr=log)
+        try:
+            async with asyncio.timeout(5):
+                while not marker.exists():
+                    assert child.poll() is None
+                    await asyncio.sleep(0.02)
+            artifact = json.loads(marker.read_text())
+            assert await engine.files.valid(artifact)
+            child.kill()
+            await asyncio.to_thread(child.wait, 3)
+            async with engine.db.connection() as c:
+                assert (
+                    await one(c, "SELECT id FROM artifacts WHERE id=%s", (artifact["id"],)) is None
+                )
+            task = await drain(engine, task_id)
+            assert task["status"] == "SUCCEEDED"
+            step = by_key(task, "probe")
+            assert [a["status"] for a in step["attempts"]] == ["INTERRUPTED", "SUCCEEDED"]
+            assert step["artifact_id"] != artifact["id"]
+            assert await engine.files.valid(artifact)  # An orphan cannot overwrite the new result.
+        finally:
+            if child.poll() is None:
+                child.kill()
+            await asyncio.to_thread(child.wait, 3)

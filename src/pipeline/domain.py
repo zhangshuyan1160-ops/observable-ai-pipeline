@@ -8,7 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 StepKey = Literal["probe", "extract", "stylize", "thumbnail", "compose", "package"]
 SUCCESS = {"SUCCEEDED", "CACHED"}
-TERMINAL = SUCCESS | {"FAILED", "BLOCKED"}
+TERMINAL = SUCCESS | {"FAILED", "BLOCKED", "CANCELLED"}
+TASK_TERMINAL = {"SUCCEEDED", "FAILED", "CANCELLED"}
 DEFINITION_VERSION = "animation-v1"
 STEPS = [
     {"key": "probe", "label": "素材检查", "depends_on": [], "resource": "cpu"},
@@ -33,13 +34,14 @@ class TaskRequest(BaseModel):
     seed: int = Field(default=42, ge=0, le=65535)
     model_version: str = Field(default="mock-v1", min_length=1, max_length=32, pattern=r"^[\w.-]+$")
     step_delay: float = Field(default=1.2, ge=0.01, le=10)
+    batch_delay: float | None = Field(default=None, ge=0.01, le=900)
     cache_enabled: bool = True
     fault_step: StepKey = "stylize"
     fault_mode: Literal["none", "transient_once", "permanent", "exhaust_once", "timeout_once"] = (
         "none"
     )
     max_attempts: int = Field(default=3, ge=1, le=5)
-    attempt_timeout: float = Field(default=120, ge=0.1, le=3600)
+    attempt_timeout: float = Field(default=120, ge=0.1, le=14400)
     task_timeout: float = Field(default=3600, ge=1, le=14400)
     gpu_memory_mb: int = Field(default=4096, ge=256, le=32768)
 

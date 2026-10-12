@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "observable-ai-pipeline"
-version = "0.1.0"
+version = "0.2.0"
 description = "Recoverable animation pipeline with PostgreSQL leases and observable attempts"
 requires-python = ">=3.12"
 dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1", "psycopg[binary]>=3.2,<4", "pillow>=11,<13"]
@@ -17,7 +17,7 @@ local = ["pgserver==0.1.4"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-pipeline = ["storage/*.sql", "web/*"]
+pipeline = ["storage/*.sql", "storage/migrations/*.sql", "web/*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

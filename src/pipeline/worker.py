@@ -56,25 +56,51 @@ async def run_job(engine: Engine, job: dict) -> None:
         for task in (compute, renewal):
             task.cancel()
         await asyncio.gather(compute, renewal, return_exceptions=True)
+        try:
+            await engine.acknowledge_cancel(job)
+        except psycopg.Error:
+            log.exception("Cancellation acknowledgement deferred: database unavailable")
 
 
 async def serve(settings: Settings, resource: str, stop: asyncio.Event) -> None:
     engine = Engine(settings)
-    await engine.db.initialize()
-    worker_id = f"{resource}-{os.getpid()}-{uuid4().hex[:6]}"
     while not stop.is_set():
         try:
-            await engine.register(worker_id, resource)
-            await engine.reap()
-            job = await engine.claim(worker_id, resource)
-            if job:
-                await run_job(engine, job)
-            else:
-                with contextlib.suppress(asyncio.TimeoutError):
-                    await asyncio.wait_for(stop.wait(), settings.poll_seconds)
+            await engine.db.initialize()
+            break
         except psycopg.Error:
-            log.exception("Worker database connection failed; retrying")
+            log.exception("Database unavailable during startup; retrying")
             await asyncio.sleep(1)
+    worker_id = f"{resource}-{os.getpid()}-{uuid4().hex[:6]}"
+
+    async def maintain() -> None:
+        while not stop.is_set():
+            try:
+                await engine.register(worker_id, resource)
+                await engine.reap()
+            except psycopg.Error:
+                log.exception("Maintenance database connection failed; retrying")
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(stop.wait(), min(1, settings.heartbeat_seconds))
+
+    maintenance = asyncio.create_task(maintain())
+    try:
+        while not stop.is_set():
+            try:
+                if maintenance.done():
+                    await maintenance
+                job = await engine.claim(worker_id, resource)
+                if job:
+                    await run_job(engine, job)
+                else:
+                    with contextlib.suppress(asyncio.TimeoutError):
+                        await asyncio.wait_for(stop.wait(), settings.poll_seconds)
+            except psycopg.Error:
+                log.exception("Worker database connection failed; retrying")
+                await asyncio.sleep(1)
+    finally:
+        maintenance.cancel()
+        await asyncio.gather(maintenance, return_exceptions=True)
 
 
 async def main_async(resource: str) -> None:

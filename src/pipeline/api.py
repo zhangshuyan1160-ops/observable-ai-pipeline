@@ -2,7 +2,7 @@
 
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
@@ -24,7 +24,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="Observable AI Pipeline",
-        version="0.1.0",
+        version="0.2.0",
         lifespan=lifespan,
         description="本地 mock 动画处理。持久化、重试、恢复与产物均真实运行。",
     )
@@ -67,19 +67,43 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         limit: Annotated[int, Query(ge=1, le=100)] = 30,
         before: str | None = None,
         status: str | None = None,
+        q: Annotated[str, Query(max_length=100)] = "",
+        view: Literal["active", "archived", "all"] = "active",
     ) -> dict:
-        if status and status not in {"QUEUED", "RUNNING", "SUCCEEDED", "FAILED"}:
+        if status and status not in {
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLING",
+            "CANCELLED",
+        }:
             raise HTTPException(422, "未知任务状态")
         async with engine.db.connection() as c:
+            if before and not await one(c, "SELECT id FROM tasks WHERE id=%s", (before,)):
+                raise HTTPException(422, "分页游标不存在，请重新加载列表")
             rows = await many(
                 c,
-                """SELECT id,params->>'title' AS title,status,created_at,updated_at
+                """SELECT id,params->>'title' AS title,status,created_at,updated_at,archived_at
                 FROM tasks WHERE (%s::text IS NULL OR status=%s)
+                AND (strpos(lower(params->>'title'),lower(%s))>0 OR strpos(id,lower(%s))>0)
+                AND (%s='all' OR (%s='archived')=(archived_at IS NOT NULL))
                 AND (%s::text IS NULL OR (created_at,id)<(SELECT created_at,id FROM tasks WHERE id=%s))
                 ORDER BY created_at DESC,id DESC LIMIT %s""",
-                (status, status, before, before, limit),
+                (status, status, q.strip(), q.strip(), view, view, before, before, limit + 1),
             )
-        return {"items": rows, "next_cursor": rows[-1]["id"] if len(rows) == limit else None}
+        return {
+            "items": rows[:limit],
+            "next_cursor": rows[limit - 1]["id"] if len(rows) > limit else None,
+        }
+
+    @app.post("/api/tasks/{task_id}/cancel", status_code=202)
+    async def cancel_task(task_id: str) -> dict:
+        return await engine.cancel(task_id)
+
+    @app.post("/api/tasks/{task_id}/archive")
+    async def archive_task(task_id: str, archived: bool = True) -> dict:
+        return await engine.archive(task_id, archived)
 
     @app.get("/api/tasks/{task_id}")
     async def task_detail(task_id: str) -> dict:

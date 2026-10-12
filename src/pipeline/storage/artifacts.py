@@ -1,10 +1,11 @@
 """Attempt-isolated immutable artifacts; database publication is a separate fenced step."""
 
-import asyncio
 import hashlib
 import os
 from pathlib import Path
 from uuid import uuid4
+
+from pipeline.blocking import run_blocking
 
 
 class ArtifactStore:
@@ -45,7 +46,7 @@ class ArtifactStore:
                 "name": name,
             }
 
-        return await asyncio.to_thread(save)
+        return await run_blocking(save)
 
     async def valid(self, artifact: dict) -> bool:
         def check() -> bool:
@@ -58,9 +59,9 @@ class ArtifactStore:
             except (OSError, ValueError, KeyError):
                 return False
 
-        return await asyncio.to_thread(check)
+        return await run_blocking(check)
 
     async def read(self, artifact: dict) -> bytes:
         if not await self.valid(artifact):
             raise FileNotFoundError("Upstream artifact is missing or corrupted")
-        return await asyncio.to_thread(self.resolve(artifact["path"]).read_bytes)
+        return await run_blocking(self.resolve(artifact["path"]).read_bytes)

@@ -28,6 +28,12 @@ class Database:
         async with self.connection() as conn:
             await conn.execute("SELECT pg_advisory_xact_lock(7391824)")
             await conn.execute(Path(__file__).with_name("schema.sql").read_text())
+            versions = {
+                r["version"] for r in await many(conn, "SELECT version FROM schema_version")
+            }
+            for migration in sorted(Path(__file__).with_name("migrations").glob("*.sql")):
+                if int(migration.name.split("_")[0]) not in versions:
+                    await conn.execute(migration.read_text())
 
 
 async def one(conn: psycopg.AsyncConnection, sql: str, args: tuple = ()) -> dict | None:

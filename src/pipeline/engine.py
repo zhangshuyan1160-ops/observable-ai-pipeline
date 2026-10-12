@@ -13,7 +13,15 @@ from uuid import uuid4
 from psycopg.types.json import Jsonb
 
 from pipeline.config import Settings
-from pipeline.domain import STEPS, SUCCESS, TERMINAL, TaskRequest, fingerprint, step_fingerprint
+from pipeline.domain import (
+    STEPS,
+    SUCCESS,
+    TASK_TERMINAL,
+    TERMINAL,
+    TaskRequest,
+    fingerprint,
+    step_fingerprint,
+)
 from pipeline.storage.artifacts import ArtifactStore
 from pipeline.storage.database import Database, many, one
 
@@ -80,7 +88,7 @@ class Engine:
         )
 
     async def create(self, request: TaskRequest, idempotency_key: str) -> dict:
-        params = request.model_dump()
+        params = request.model_dump(exclude_none=True)
         task_id = uuid4().hex
         digest = fingerprint(params)
         async with self.db.connection() as c:
@@ -146,7 +154,9 @@ class Engine:
                 )
             statuses = {s["status"] for s in task["steps"]}
             task["phase"] = (
-                "executing"
+                "cancelling"
+                if task["status"] == "CANCELLING"
+                else "executing"
                 if "RUNNING" in statuses
                 else "retrying"
                 if "RETRY_WAIT" in statuses
@@ -169,7 +179,16 @@ class Engine:
 
     async def refresh(self, c, task_id: str) -> None:
         """Called with task lock held. Topological order propagates blocking in one pass."""
+        task = await one(c, "SELECT status FROM tasks WHERE id=%s", (task_id,))
         steps = await many(c, "SELECT * FROM steps WHERE task_id=%s ORDER BY ordinal", (task_id,))
+        if task["status"] in {"CANCELLING", "CANCELLED"}:
+            if task["status"] == "CANCELLING" and all(s["status"] in TERMINAL for s in steps):
+                await c.execute(
+                    "UPDATE tasks SET status='CANCELLED',cancelled_at=clock_timestamp() WHERE id=%s",
+                    (task_id,),
+                )
+                await self.event(c, task_id, "task.cancelled")
+            return
         states = {s["key"]: s["status"] for s in steps}
         for step in steps:
             if step["status"] not in {"PENDING", "BLOCKED"}:
@@ -187,7 +206,6 @@ class Engine:
                 await self.event(c, task_id, "step." + status.lower(), step)
                 step["status"] = status
                 states[step["key"]] = status
-        task = await one(c, "SELECT status FROM tasks WHERE id=%s", (task_id,))
         if all(s["status"] in SUCCESS for s in steps):
             status = "SUCCEEDED"
         elif all(s["status"] in TERMINAL for s in steps):
@@ -211,8 +229,13 @@ class Engine:
             # Short task locks serialize state/event publication, never computation.
             tasks = await many(
                 c,
-                """SELECT * FROM tasks WHERE status IN ('QUEUED','RUNNING')
-                AND deadline>clock_timestamp() ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 32""",
+                """SELECT * FROM tasks t WHERE status IN ('QUEUED','RUNNING')
+                AND deadline>clock_timestamp() AND EXISTS(
+                    SELECT 1 FROM steps s WHERE s.task_id=t.id AND s.resource=%s
+                    AND s.status IN ('READY','WAITING_RESOURCE','RETRY_WAIT')
+                    AND s.next_run_at<=clock_timestamp())
+                ORDER BY created_at,id FOR UPDATE OF t SKIP LOCKED LIMIT 32""",
+                (resource,),
             )
             for task in tasks:
                 await self.refresh(c, task["id"])
@@ -357,7 +380,8 @@ class Engine:
             """SELECT s.* FROM steps s JOIN attempts a ON a.id=s.current_attempt_id
             JOIN tasks t ON t.id=s.task_id WHERE s.id=%s AND s.current_attempt_id=%s AND s.token=%s
             AND s.status='RUNNING' AND a.status='RUNNING' AND a.lease_expires_at>clock_timestamp()
-            AND a.deadline>clock_timestamp() AND t.deadline>clock_timestamp() FOR UPDATE OF s""",
+            AND a.deadline>clock_timestamp() AND t.deadline>clock_timestamp()
+            AND t.status='RUNNING' FOR UPDATE OF s""",
             (step["id"], job["attempt"]["id"], step["token"]),
         )
 
@@ -521,7 +545,7 @@ class Engine:
         async with self.db.connection() as c:
             tasks = await many(
                 c,
-                """SELECT * FROM tasks t WHERE t.status IN ('QUEUED','RUNNING')
+                """SELECT * FROM tasks t WHERE t.status IN ('QUEUED','RUNNING','CANCELLING')
                 AND (t.deadline<=clock_timestamp() OR EXISTS(SELECT 1 FROM attempts a WHERE a.task_id=t.id
                 AND a.status='RUNNING' AND (a.lease_expires_at<=clock_timestamp() OR a.deadline<=clock_timestamp())))
                 ORDER BY t.created_at FOR UPDATE SKIP LOCKED LIMIT 32""",
@@ -540,6 +564,11 @@ class Engine:
                             c, "SELECT * FROM attempts WHERE id=%s", (step["current_attempt_id"],)
                         )
                         timeout = expired_task or attempt["deadline"] <= now
+                        if task["status"] == "CANCELLING":
+                            if attempt["lease_expires_at"] <= now:
+                                await self.finish_cancel(c, task, step, confirmed=False)
+                                count += 1
+                            continue
                         if timeout or attempt["lease_expires_at"] <= now:
                             await self.finish_failure(
                                 c,
@@ -576,6 +605,8 @@ class Engine:
                 raise NotFound(step_id)
             task = await one(c, "SELECT * FROM tasks WHERE id=%s FOR UPDATE", (found["task_id"],))
             step = await one(c, "SELECT * FROM steps WHERE id=%s FOR UPDATE", (step_id,))
+            if task["status"] in {"CANCELLING", "CANCELLED"} or task["archived_at"]:
+                raise Conflict("取消或归档的任务不可重试；归档任务请先恢复到任务列表")
             if task["deadline"] <= (await one(c, "SELECT clock_timestamp() AS now"))["now"]:
                 raise Conflict("任务已超过总体截止时间，请新建任务")
             if step["status"] != "FAILED":
@@ -616,3 +647,91 @@ class Engine:
                     FROM steps WHERE status='WAITING_RESOURCE' ORDER BY wait_since""",
                 ),
             }
+
+    async def cancel(self, task_id: str) -> dict:
+        async with self.db.connection() as c:
+            task = await one(c, "SELECT * FROM tasks WHERE id=%s FOR UPDATE", (task_id,))
+            if task is None:
+                raise NotFound(task_id)
+            if task["status"] in {"CANCELLING", "CANCELLED"}:
+                return {"task_id": task_id, "status": task["status"]}
+            if task["status"] in TASK_TERMINAL:
+                raise Conflict("任务已经结束，无需取消")
+            await c.execute(
+                "UPDATE tasks SET status='CANCELLING',cancel_requested_at=clock_timestamp() WHERE id=%s",
+                (task_id,),
+            )
+            await self.event(c, task_id, "task.cancel_requested")
+            steps = await many(
+                c, "SELECT * FROM steps WHERE task_id=%s ORDER BY ordinal FOR UPDATE", (task_id,)
+            )
+            for step in steps:
+                if step["status"] not in SUCCESS | {"FAILED", "RUNNING"}:
+                    await c.execute(
+                        "UPDATE steps SET status='CANCELLED' WHERE id=%s", (step["id"],)
+                    )
+                    await self.event(c, task_id, "step.cancelled", step)
+            await self.refresh(c, task_id)
+            return {
+                "task_id": task_id,
+                "status": (await one(c, "SELECT status FROM tasks WHERE id=%s", (task_id,)))[
+                    "status"
+                ],
+            }
+
+    async def finish_cancel(self, c, task: dict, step: dict, confirmed: bool) -> None:
+        """Caller holds task + step locks; cancellation never consumes a retry round."""
+        await c.execute(
+            "UPDATE attempts SET status=%s,finished_at=clock_timestamp(),error_type=%s,error=%s WHERE id=%s",
+            (
+                "CANCELLED" if confirmed else "INTERRUPTED",
+                "USER_CANCELLED" if confirmed else "CANCEL_WORKER_LOST",
+                "Worker 已确认停止"
+                if confirmed
+                else "取消期间租约过期；执行停止未确认（仅释放模拟槽）",
+                step["current_attempt_id"],
+            ),
+        )
+        await c.execute("UPDATE steps SET status='CANCELLED' WHERE id=%s", (step["id"],))
+        if not confirmed:
+            await c.execute("UPDATE tasks SET cancel_unconfirmed=true WHERE id=%s", (task["id"],))
+        await self.release(c, step["current_attempt_id"])
+        await self.event(
+            c,
+            task["id"],
+            "attempt.cancelled" if confirmed else "attempt.cancel_unconfirmed",
+            step,
+            {"stop_confirmed": confirmed},
+        )
+        await self.refresh(c, task["id"])
+
+    async def acknowledge_cancel(self, job: dict) -> bool:
+        """Only called after the compute coroutine and its blocking work have stopped."""
+        async with self.db.connection() as c:
+            task = await one(c, "SELECT * FROM tasks WHERE id=%s FOR UPDATE", (job["task"]["id"],))
+            if not task or task["status"] != "CANCELLING":
+                return False
+            step = await one(c, "SELECT * FROM steps WHERE id=%s FOR UPDATE", (job["step"]["id"],))
+            if (
+                step["status"] != "RUNNING"
+                or step["current_attempt_id"] != job["attempt"]["id"]
+                or step["token"] != job["step"]["token"]
+            ):
+                return False
+            await self.finish_cancel(c, task, step, confirmed=True)
+            return True
+
+    async def archive(self, task_id: str, archived: bool) -> dict:
+        async with self.db.connection() as c:
+            task = await one(c, "SELECT * FROM tasks WHERE id=%s FOR UPDATE", (task_id,))
+            if task is None:
+                raise NotFound(task_id)
+            if task["status"] not in TASK_TERMINAL:
+                raise Conflict("只能归档已结束的任务")
+            if bool(task["archived_at"]) != archived:
+                await c.execute(
+                    "UPDATE tasks SET archived_at=CASE WHEN %s THEN clock_timestamp() ELSE NULL END WHERE id=%s",
+                    (archived, task_id),
+                )
+                await self.event(c, task_id, "task.archived" if archived else "task.unarchived")
+            return {"task_id": task_id, "archived": archived}

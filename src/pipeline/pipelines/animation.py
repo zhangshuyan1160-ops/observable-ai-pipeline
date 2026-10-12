@@ -9,6 +9,7 @@ import zipfile
 
 from PIL import Image, ImageDraw
 
+from pipeline.blocking import run_blocking
 from pipeline.engine import Engine
 
 
@@ -77,7 +78,7 @@ async def execute(engine: Engine, job: dict) -> dict:
         ).encode()
         return await engine.files.write(data, "frame-manifest.json", "application/json")
     if key == "thumbnail":
-        data = await asyncio.to_thread(make_frame, 0, p["frames"], p["asset"])
+        data = await run_blocking(make_frame, 0, p["frames"], p["asset"])
         return await engine.files.write(data, "thumbnail.png", "image/png")
     if key == "stylize":
         saved = step["checkpoint"]
@@ -93,9 +94,9 @@ async def execute(engine: Engine, job: dict) -> dict:
         if saved and not valid:
             await engine.checkpoint(job, {}, 0, reset=True)
         for begin in range(len(frames), p["frames"], 4):
-            await asyncio.sleep(p["step_delay"])
+            await asyncio.sleep(p.get("batch_delay") or p["step_delay"])
             for index in range(begin, min(begin + 4, p["frames"])):
-                data = await asyncio.to_thread(
+                data = await run_blocking(
                     make_frame, index, p["frames"], p["asset"], p["model_version"], p["seed"]
                 )
                 frames.append(await engine.files.write(data, f"frame-{index:03d}.png", "image/png"))
@@ -105,7 +106,7 @@ async def execute(engine: Engine, job: dict) -> dict:
             f"frame-{i:03d}.png": await engine.files.read(a) for i, a in enumerate(frames)
         }
         return await engine.files.write(
-            await asyncio.to_thread(pack, frame_data), "styled-frames.zip", "application/zip"
+            await run_blocking(pack, frame_data), "styled-frames.zip", "application/zip"
         )
     if key == "compose":
 
@@ -121,15 +122,13 @@ async def execute(engine: Engine, job: dict) -> dict:
             )
             return output.getvalue()
 
-        return await engine.files.write(
-            await asyncio.to_thread(compose), "animation.gif", "image/gif"
-        )
+        return await engine.files.write(await run_blocking(compose), "animation.gif", "image/gif")
     if key == "package":
         manifest = {
             name: {k: value[k] for k in ("sha256", "size", "name")}
             for name, value in job["upstream"].items()
         }
-        data = await asyncio.to_thread(
+        data = await run_blocking(
             pack,
             {
                 "animation.gif": inputs["compose"],
