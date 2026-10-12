@@ -13,6 +13,12 @@ from pipeline.config import Settings
 from pipeline.engine import Engine
 
 
+def pytest_configure(config):
+    """Fresh external-DB checkouts have not run the local bootstrap script."""
+    if base := config.getoption("basetemp"):
+        Path(base).resolve().parent.mkdir(parents=True, exist_ok=True)
+
+
 @pytest.fixture(scope="session")
 def postgres_url():
     if os.getenv("TEST_DATABASE_URL"):

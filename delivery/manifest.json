@@ -1,7 +1,7 @@
 {
-  "commit": "8a04d06e714060429d5e63e893263dd9ea78739e",
+  "commit": "745b4ceed356f29f56be5a4217c7248086a4d964",
   "archive": "observable-ai-pipeline-v0.1.0.zip",
-  "bytes": 194014,
-  "sha256": "01ebdf1130c074035b246d91c9b24bb7a82fdac5788e2474142a8d3a2effcbe7",
+  "bytes": 194473,
+  "sha256": "d7f134e11fb77a273d4eec4a1909470ff109e2c43917a826d837ff48e3b0b65a",
   "commit_scope": "Local source snapshot; GitHub publication commit is separate."
 }

@@ -116,3 +116,7 @@ implementation-start 总计 2,900,896；implementation-end（2026-10-12 15:17:53
 ## 发布与人工复核安排
 
 已确认公开仓库 observable-ai-pipeline 的 main 分支初始化完成。提交说明采用 Codex 辅助开发的表述，另附人工开发与复核清单；个人实际工时按完成后的记录补充。通过连接器上传源码与 ZIP，并以匿名下载摘要验证发布。
+
+### 首次 Linux CI 暴露的环境假设
+
+GitHub Actions run 38218162464 的安装/lint 均成功，pytest 因 `.local/pytest` 父目录缺失出现 18 个 fixture 初始化错误。本机 bootstrap 和 pgserver 已创建 .local；CI 使用外部 PostgreSQL，绕过了这个隐含副作用。修复为 pytest_configure 按显式 basetemp 参数创建父目录，使测试准备与数据库来源解耦；同时指定健康检查数据库用户。独立归档安装测试曾通过，因为它运行过 bootstrap，不能等同于覆盖所有 CI 环境准备路径。
