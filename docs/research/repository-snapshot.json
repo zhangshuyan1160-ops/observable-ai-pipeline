@@ -1,0 +1,85 @@
+{
+  "checked_on": "2026-10-12",
+  "repositories": [
+    {
+      "repo": "vercel-labs/skills",
+      "stars": 33865,
+      "updated_at": "2026-10-12T06:36:26Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "13e4063a1cf913f5606d57d42ab83a86f5001e04",
+      "license": "MIT",
+      "url": "https://github.com/vercel-labs/skills"
+    },
+    {
+      "repo": "temporalio/skill-temporal-developer",
+      "stars": 230,
+      "updated_at": "2026-10-09T17:07:41Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "3041178b597dddb1b54f49e5e73fbae644fba283",
+      "license": "MIT",
+      "url": "https://github.com/temporalio/skill-temporal-developer"
+    },
+    {
+      "repo": "wshobson/agents",
+      "stars": 40436,
+      "updated_at": "2026-10-12T05:43:49Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "license": "MIT",
+      "url": "https://github.com/wshobson/agents"
+    },
+    {
+      "repo": "anthropics/skills",
+      "stars": 180579,
+      "updated_at": "2026-10-12T06:35:51Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "license": null,
+      "url": "https://github.com/anthropics/skills"
+    },
+    {
+      "repo": "addyosmani/agent-skills",
+      "stars": 105176,
+      "updated_at": "2026-10-12T06:36:59Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "1be8e34187e34647bb83adc3a1323b26ae6f6abe",
+      "license": "MIT",
+      "url": "https://github.com/addyosmani/agent-skills"
+    },
+    {
+      "repo": "dbos-inc/agent-skills",
+      "stars": 18,
+      "updated_at": "2026-10-01T19:41:32Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "4cf09dab16b03b8b39162561dcfd47febca4ae6e",
+      "license": "MIT",
+      "url": "https://github.com/dbos-inc/agent-skills"
+    },
+    {
+      "repo": "vercel-labs/agent-skills",
+      "stars": 32259,
+      "updated_at": "2026-10-12T06:30:53Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "license": null,
+      "url": "https://github.com/vercel-labs/agent-skills"
+    },
+    {
+      "repo": "o11y-dev/opentelemetry-skill",
+      "stars": 48,
+      "updated_at": "2026-10-04T06:09:33Z",
+      "archived": false,
+      "branch": "main",
+      "sha": "e5fbc7ca448a39f03ee78968102df0a571200db2",
+      "license": "NOASSERTION",
+      "url": "https://github.com/o11y-dev/opentelemetry-skill"
+    }
+  ]
+}

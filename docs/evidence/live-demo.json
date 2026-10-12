@@ -1,0 +1,60 @@
+{
+  "recorded_at": "2026-10-12T07:17:51.971187+00:00",
+  "checks": [
+    {
+      "name": "cross_task_cache",
+      "task_id": "25af64ec42394cfd831106c4f040f8a2",
+      "cached_steps": 6
+    },
+    {
+      "name": "manual_retry",
+      "task_id": "7eacc078e7434d9880b90a06c21895f4",
+      "attempts": 4
+    },
+    {
+      "name": "real_worker_and_api_sigkill",
+      "task_id": "d8c1fd3a901a42e68febed720b3d718d",
+      "saved_frames": 4,
+      "attempts": [
+        {
+          "id": "4f2f6e4c146d483ba084a9af04ca3517",
+          "task_id": "d8c1fd3a901a42e68febed720b3d718d",
+          "step_id": "e4e0840daa2f44ada67c4560ec1bb2ac",
+          "worker_id": "gpu-46382-c5fa55",
+          "token": 1,
+          "retry_round": 0,
+          "attempt_no": 1,
+          "status": "INTERRUPTED",
+          "started_at": "2026-10-12T07:18:02.600352Z",
+          "finished_at": "2026-10-12T07:18:12.660378Z",
+          "heartbeat_at": "2026-10-12T07:18:02.600352Z",
+          "lease_expires_at": "2026-10-12T07:18:12.600352Z",
+          "deadline": "2026-10-12T07:20:02.600352Z",
+          "resume_from": 0,
+          "error_type": "WORKER_LOST",
+          "error": "Worker 心跳过期，恢复待执行"
+        },
+        {
+          "id": "c2aaf18cb71e4e99968dd10c536ecbf5",
+          "task_id": "d8c1fd3a901a42e68febed720b3d718d",
+          "step_id": "e4e0840daa2f44ada67c4560ec1bb2ac",
+          "worker_id": "gpu-47168-506f46",
+          "token": 2,
+          "retry_round": 0,
+          "attempt_no": 2,
+          "status": "SUCCEEDED",
+          "started_at": "2026-10-12T07:18:13.831705Z",
+          "finished_at": "2026-10-12T07:18:20.438703Z",
+          "heartbeat_at": "2026-10-12T07:18:19.857090Z",
+          "lease_expires_at": "2026-10-12T07:18:29.857090Z",
+          "deadline": "2026-10-12T07:20:13.831706Z",
+          "resume_from": 4,
+          "error_type": null,
+          "error": null
+        }
+      ],
+      "bundle_sha256": "4d983cab22cb511f8e9421b2c46d72d82514e03d1590eee6e3656d2a0fff165a"
+    }
+  ],
+  "passed": true
+}

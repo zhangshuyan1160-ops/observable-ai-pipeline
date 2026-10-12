@@ -1,0 +1,14 @@
+{
+  "logical_bytes": {
+    ".venv": 128798382,
+    ".local": 180234869,
+    "src": 171087,
+    "tests": 96279,
+    "scripts": 18962,
+    "docs": 220924,
+    ".git": 226743
+  },
+  "runtime_rss_bytes": 228868096,
+  "process_count": 11,
+  "note": "Idle snapshot of supervisor, API, 3 workers, PostgreSQL and its children. RSS counts shared pages multiple times; not a peak measurement."
+}

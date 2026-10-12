@@ -1,0 +1,14 @@
+{
+  "scope": "one current Codex chat, cumulative through the recorded snapshot; not final project usage",
+  "source": "local Codex token_count total_token_usage; conversation text and local path omitted",
+  "snapshot_at_utc": "2026-10-12T07:24:31.199Z",
+  "snapshot_at_shanghai": "2026-10-12T15:24:31.199000+08:00",
+  "usage_event_count": 82,
+  "input_tokens": 9129413,
+  "cached_input_tokens_subset": 8576128,
+  "output_tokens": 108187,
+  "reasoning_output_tokens_reported_subset": 19115,
+  "total_tokens_input_plus_output": 9237600,
+  "uncached_input_plus_output": 661472,
+  "note": "Cached input is already included in input. This is not a cost estimate or human-work timer."
+}

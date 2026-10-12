@@ -1,0 +1,7 @@
+*
+!src/
+!src/**
+!pyproject.toml
+!requirements-runtime.lock
+!README.md
+**/__pycache__

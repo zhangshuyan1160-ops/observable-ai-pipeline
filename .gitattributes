@@ -1,0 +1,3 @@
+# Exclude published archives when exporting source to avoid recursive ZIPs.
+delivery/ export-ignore
+delivery/** export-ignore

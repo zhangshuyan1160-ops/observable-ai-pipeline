@@ -1,0 +1,41 @@
+x-app: &app
+  build: .
+  environment:
+    DATABASE_URL: postgresql://pipeline:${POSTGRES_PASSWORD:-local-demo-only}@db:5432/pipeline
+    ARTIFACT_ROOT: /data/artifacts
+  volumes:
+    - artifacts:/data/artifacts
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: pipeline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-demo-only}
+      POSTGRES_DB: pipeline
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pipeline -d pipeline"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  api:
+    <<: *app
+    ports: ["127.0.0.1:8765:8765"]
+  cpu:
+    <<: *app
+    command: ["python", "-m", "pipeline.worker", "--resource", "cpu"]
+  gpu:
+    <<: *app
+    command: ["python", "-m", "pipeline.worker", "--resource", "gpu"]
+  gpu2:
+    <<: *app
+    command: ["python", "-m", "pipeline.worker", "--resource", "gpu"]
+volumes:
+  postgres:
+  artifacts:

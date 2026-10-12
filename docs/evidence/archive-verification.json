@@ -1,0 +1,10 @@
+{
+  "source_commit": "d9bf83f4d8f06be876fc3a5998e5a799ed60bc63",
+  "archive_sha256": "d9e576fefdd94246db29372ed494ef342ba4411eab549e3d3e924695a3c60e7c",
+  "method": "git archive -> extract -> new .venv -> bootstrap locked requirements -> pytest -> pip check",
+  "tests": 19,
+  "passed": 19,
+  "seconds": 12.44,
+  "pip_check": "No broken requirements found",
+  "scope": "macOS arm64 / Python 3.12, fresh virtualenv; same host, not clean OS or Docker"
+}

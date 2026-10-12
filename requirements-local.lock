@@ -1,0 +1,6 @@
+# Exact installed versions verified on Python 3.12 / macOS arm64.
+-r requirements.lock
+fasteners==0.20
+pgserver==0.1.4
+platformdirs==4.13.0
+psutil==7.2.2

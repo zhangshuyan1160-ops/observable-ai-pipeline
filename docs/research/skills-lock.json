@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-12",
+  "installation_scope": "Codex user skills; no third-party skill source vendored in this project",
+  "cli_version": "1.7.2",
+  "skills": [
+    {
+      "name": "find-skills",
+      "repository": "vercel-labs/skills",
+      "commit": "13e4063a1cf913f5606d57d42ab83a86f5001e04",
+      "source_path": "skills/find-skills",
+      "source_url": "https://github.com/vercel-labs/skills/tree/13e4063a1cf913f5606d57d42ab83a86f5001e04/skills/find-skills",
+      "install_path": "~/.codex/skills/find-skills",
+      "license": "MIT",
+      "installs_observed": "3.8M",
+      "usage_in_this_phase": "discovery",
+      "files_sha256": {
+        "SKILL.md": "c00eeea0e13e74fe4a9d84ba0a8542205a1b736d65f13134fe1a6647eb14976f"
+      }
+    },
+    {
+      "name": "python-background-jobs",
+      "repository": "wshobson/agents",
+      "commit": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "source_path": "plugins/python-development/skills/python-background-jobs",
+      "source_url": "https://github.com/wshobson/agents/tree/46891e7e60da0e52baf1050b7b6391b64e84c6d9/plugins/python-development/skills/python-background-jobs",
+      "install_path": "~/.codex/skills/python-background-jobs",
+      "license": "MIT",
+      "installs_observed": "10.8K",
+      "usage_in_this_phase": "planning",
+      "files_sha256": {
+        "SKILL.md": "ea99e3f1d4df0e0c7260e3d6436003ea980c55d8b1ad6950ba63048491eb531e",
+        "references/details.md": "96268f59787cba8297e5d0a811fcc3c1fe70ec2ea1a4f1fcb939f67c6ca45ba2"
+      }
+    },
+    {
+      "name": "python-observability",
+      "repository": "wshobson/agents",
+      "commit": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "source_path": "plugins/python-development/skills/python-observability",
+      "source_url": "https://github.com/wshobson/agents/tree/46891e7e60da0e52baf1050b7b6391b64e84c6d9/plugins/python-development/skills/python-observability",
+      "install_path": "~/.codex/skills/python-observability",
+      "license": "MIT",
+      "installs_observed": "11.2K",
+      "usage_in_this_phase": "planning",
+      "files_sha256": {
+        "SKILL.md": "bf547d6ee0284ce20bbe521af3e40d53ca9481634dfeaaf16f25c88de6828f56",
+        "references/details.md": "38ec551a90f38896a24437e149bac7bc980234970821a505b3f80555d787fbfe"
+      }
+    },
+    {
+      "name": "postgresql-table-design",
+      "repository": "wshobson/agents",
+      "commit": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "source_path": "plugins/database-design/skills/postgresql-table-design",
+      "source_url": "https://github.com/wshobson/agents/tree/46891e7e60da0e52baf1050b7b6391b64e84c6d9/plugins/database-design/skills/postgresql-table-design",
+      "install_path": "~/.codex/skills/postgresql-table-design",
+      "license": "MIT",
+      "installs_observed": "27K",
+      "usage_in_this_phase": "planning",
+      "files_sha256": {
+        "SKILL.md": "1e27b0fac6d88a710cd925b831608ca202c40ade4f4e285a8e027dcf2f9a44ea",
+        "references/details.md": "fac8b43c75ed30d95f2ab12886021f26bb8b03f8fed0cea2929b8de18953023a"
+      }
+    },
+    {
+      "name": "workflow-orchestration-patterns",
+      "repository": "wshobson/agents",
+      "commit": "46891e7e60da0e52baf1050b7b6391b64e84c6d9",
+      "source_path": "plugins/backend-development/skills/workflow-orchestration-patterns",
+      "source_url": "https://github.com/wshobson/agents/tree/46891e7e60da0e52baf1050b7b6391b64e84c6d9/plugins/backend-development/skills/workflow-orchestration-patterns",
+      "install_path": "~/.codex/skills/workflow-orchestration-patterns",
+      "license": "MIT",
+      "installs_observed": "11.7K",
+      "usage_in_this_phase": "planning-reference",
+      "files_sha256": {
+        "SKILL.md": "f4418f98189bd89d7b801ec65df48b53caa1c555a23f1d9684799415818f1024",
+        "references/details.md": "f904309ab60916d3e6943a2c35ffeadc48ddfa6a3defdd8da5472926ba8887cb"
+      }
+    },
+    {
+      "name": "frontend-design",
+      "repository": "anthropics/skills",
+      "commit": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "source_path": "skills/frontend-design",
+      "source_url": "https://github.com/anthropics/skills/tree/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design",
+      "install_path": "~/.codex/skills/frontend-design",
+      "license": "Apache-2.0",
+      "installs_observed": "975.5K",
+      "usage_in_this_phase": "installed-for-ui-phase",
+      "files_sha256": {
+        "LICENSE.txt": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "SKILL.md": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+      }
+    }
+  ]
+}
