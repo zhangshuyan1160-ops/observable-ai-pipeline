@@ -1,0 +1,13 @@
+{
+  "scope": "Elapsed project time from initial discussion to the published v0.3.0 documentation revision; includes AI execution, verification and waiting.",
+  "started_at": "2026-10-12T14:36:00.434+08:00",
+  "start_source": "First user-message timestamp in this project conversation; no conversation content exported.",
+  "published_at": "2026-10-12T22:27:28+08:00",
+  "publication_commit": "a28d5ed2a07d105db62c1516de72bc324b947e03",
+  "publication_source": "Git commit author timestamp",
+  "elapsed_seconds": 28287.566,
+  "elapsed_hours": 7.858,
+  "display": "约 8 小时（10 小时以内）",
+  "measurement": "wall-clock elapsed time, not an individual active-work timesheet",
+  "later_scope": "Subsequent documentation polishing is outside this release interval."
+}

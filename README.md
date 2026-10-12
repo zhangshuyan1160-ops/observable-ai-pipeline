@@ -2,7 +2,7 @@
 
 [公开源码](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline) · [下载 v0.3.0 ZIP](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/raw/refs/heads/main/delivery/observable-ai-pipeline-v0.3.0.zip) · [提交说明](docs/submission.md)
 
-题 D 的两天 MVP。计算和 GPU 使用 MOCK，状态事务、独立 Worker、进程中断、检查点和文件产物真实执行。无需服务器、CUDA、大模型、Node 构建链或 Docker Desktop。
+面向动画素材处理的任务执行 MVP，重点是步骤重试、中断恢复、结果复用和状态查询。计算与 GPU 使用 MOCK，数据库和文件产物实际持久化。项目总用时约 8 小时（10 小时以内，含 AI 辅助开发、验证、反馈和发布），[时间记录](docs/evidence/project-timeline.json)。
 
 **v0.3.0：稳定创建幂等、完整参数复制、恢复诊断、缓存来源及响应式管线连线。** 本地与 Linux CI 的 33 项 pytest 和 4 项前端测试通过；[改动与验收](docs/submission-quality.md) · [发布校验](docs/evidence/release-v0.3-verification.json) · [GitHub Actions](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/workflows/ci.yml)。
 
@@ -36,7 +36,7 @@ PYTHON_BIN=python3.12 sh scripts/bootstrap.sh
 
 浏览器打开 http://127.0.0.1:8765 。接口文档 `/docs`，指标 `/metrics`。启动器管理一个 API、一个 CPU Worker、两个竞争单槽资源的 GPU mock Workers。首次初始化本地 PostgreSQL；按 Ctrl+C 停止，重新启动保留任务和产物。
 
-`pgserver==0.1.4` 为本地开发提供真实 PostgreSQL 16.2。这个捆绑版本仅用于隔离的本地演示，不作为公网生产数据库；生产或 Linux 评审可使用维护中的 PostgreSQL 16 实例。原生 Windows 未验证，可用 WSL2 / Compose。
+本地演示使用 `pgserver==0.1.4` 提供的 PostgreSQL 16.2。Linux CI 使用 PostgreSQL 16 service。公网运行应使用维护中的数据库版本并配置鉴权；原生 Windows 和 WSL2 路径尚未验证。
 
 ```bash
 # 另一个终端，均在项目根目录
@@ -48,7 +48,7 @@ PYTHON_BIN=python3.12 sh scripts/bootstrap.sh
 
 已安装独立 PostgreSQL 时：安装 `requirements.lock` 与本项目，导出 `DATABASE_URL` 和 `ARTIFACT_ROOT`，分别运行 `uvicorn pipeline.api:create_app --factory` 及 `python -m pipeline.worker --resource cpu/gpu`。API/Worker 必须使用同一数据库和产物目录。
 
-提供 `docker compose up --build` 备选，默认端口仍只绑定本机，持久卷保存状态和产物。**Docker 在本机未安装，因此 Compose 尚未运行验证**；不将其列为已验收启动路径。
+提供 `docker compose up --build` 备选配置，端口绑定本机，持久卷保存状态和产物。Compose 尚未运行验收，推荐先使用上面的本地启动方式。
 
 ## 验证与演示
 
@@ -106,7 +106,7 @@ dist/              本地构建 ZIP 与 SHA-256 清单（忽略）
 delivery/          GitHub 交付 ZIP 与摘要（导出源码包时排除）
 ```
 
-源码、环境、运行数据均集中于这个独立目录。当前本机实际占用见 [environment.md](docs/environment.md)。不把数据库、个人路径、凭据或虚拟环境上传 GitHub。
+源码、环境和运行数据集中在这个独立目录。环境配置与空间建议见 [environment.md](docs/environment.md)。GitHub 仅保存源码、文档和交付文件。
 
 ```bash
 # 必须先提交源码；仅打包 Git HEAD，不打包运行文件
@@ -118,14 +118,14 @@ python3 scripts/clean.py --apply
 python3 scripts/clean.py --dependencies --apply
 ```
 
-清理脚本保留源码、ZIP、数据库和动画产物。源码 ZIP 可解压后用 bootstrap 重建环境；ZIP 不包含个人演示任务数据库备份。GitHub 仓库保留可浏览源码；压缩包是额外交付物。delivery/manifest.json 记录本地源码快照 commit 与 ZIP 的 SHA-256；GitHub 上传提交可能不同，下载后按 SHA-256 校验文件。
+清理脚本保留源码、ZIP、数据库和动画产物。源码 ZIP 可解压后用 bootstrap 重建环境；ZIP 不包含本地任务数据库备份。GitHub 仓库保留可浏览源码；压缩包是额外交付物。delivery/manifest.json 记录本地源码快照 commit 与 ZIP 的 SHA-256；GitHub 上传提交可能不同，下载后按 SHA-256 校验文件。
 
 ## 说明与边界
 
 - [面试提交简要说明](docs/submission.md)：逐项回应题目。
 - [设计](docs/architecture.md)：状态、事务、恢复、GPU 和小时级扩展。
-- [两天计划](docs/plan.md) · [Skills 检索及新增清单](docs/skills.md) · [工作记录与 AI 用量](docs/worklog.md)。
+- [实施计划与时间记录](docs/plan.md) · [Skills 检索及新增清单](docs/skills.md) · [工作记录与 AI 用量](docs/worklog.md)。
 
-这是单机固定 DAG 执行器，保证至少一次执行和有所有权校验的结果提交。未实现任意素材上传、多租户鉴权、真实 GPU 或生产级多机调度；不保证 exactly-once 计算。不把未完成的小时级压测或 Compose 验证写成已通过。
+当前支持单机固定 DAG、至少一次执行和带所有权校验的结果提交。任意素材上传、多租户鉴权、真实 GPU 和多机调度属于后续扩展。已通过一小时单任务恢复演练，高并发压力和 Compose 运行尚未验收。
 
-本项目使用 Codex 辅助方案梳理、实现、测试和文档；职责、Token 快照及未计时说明见 [提交说明](docs/submission.md#5-ai-coding-工具token-与主要消耗)。
+本项目使用 Codex 辅助开发；分工与 Token 记录见 [提交说明](docs/submission.md)。

@@ -1,6 +1,6 @@
 # 可恢复动画任务管线设计
 
-状态：下文为 MVP 已实现设计，扩展项明确单列。源码采用 FastAPI + psycopg 显式 SQL + PostgreSQL schema v2；没有引入 SQLAlchemy/Alembic。初版 19 项集成测试保留，v0.2 新增回归与真实服务中断验收见 evidence。
+当前实现采用 FastAPI、psycopg 显式 SQL 和 PostgreSQL schema v2。33 项 pytest、4 项前端测试及服务中断演练见 evidence；小时级与多机扩展在后文单列。
 
 ## 执行边界
 
@@ -150,7 +150,7 @@ fingerprint = SHA256(canonical_json({
 
 事件使用**任务内顺序号**：持有任务行锁时分配并和状态同事务提交。不能直接用全局自增 ID 作严格不漏事件的游标，否则事务乱序提交可能漏掉较小 ID 的晚提交事件。
 
-UI 每 1.2 秒轮询任务列表和资源；详情终态在 updated_at 不变时停止重复获取。事件按 seq 增量分页，内存保留最近 500 条、显示最后 30 条。主视图显示 DAG，选择步骤查看 attempts/事件/产物。展示每次执行耗时、GPU 等待时间、上次心跳；next_run_at 和重试退避记录可从 API/事件查询。整体百分比只标为估算；有实际批次计数时显示 `已完成批次/总批次`，不伪造精确 ETA。
+UI 每 1.2 秒轮询任务列表和资源；详情终态在 updated_at 不变时停止重复获取。事件按 seq 增量分页，内存保留最近 500 条、显示最后 30 条。主视图显示 DAG，选择步骤查看 attempts/事件/产物。展示每次执行耗时、GPU 等待时间、上次心跳；next_run_at 和重试退避记录可从 API/事件查询。整体进度综合步骤和批次记录；批次进度来自已保存帧数，暂不提供预计完成时间。
 
 结构化日志包含 `task_id`、`step_key`、`attempt_id`、`worker_id`、`event_type`、`entry_point`。这些高基数字段只放日志/事件，不作为 Prometheus labels。指标按有限的 step type、resource type、outcome 聚合。事件用于恢复和审计，日志用于排障；日志收集故障不应把已成功的任务回滚。
 
@@ -162,13 +162,13 @@ MVP 一个 `gpu-mock-0` 槽、模拟 8 GiB 显存；风格化要求 4 GiB，独�
 
 真实扩展包括资源标签/显存估计、专用 GPU 队列、模型预热、显存 OOM 分类、批大小调整、队列年龄与公平性。不能反复用同一批大小重试确定性 OOM；改变批大小若影响语义，应记录参数变更与新版本。
 
-实际 GPU 利用率、显存、温度和功耗可通过 NVIDIA DCGM Exporter 暴露给 Prometheus，结合任务/attempt 与设备映射诊断。MVP 不声称已经接入真卡或测得 GPU 性能。[NVIDIA GPU Telemetry](https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/latest/)
+实际 GPU 利用率、显存、温度和功耗可通过 NVIDIA DCGM Exporter 暴露给 Prometheus，结合任务/attempt 与设备映射诊断。当前界面显示模拟数据；真实设备接入属于后续扩展。[NVIDIA GPU Telemetry](https://docs.nvidia.com/datacenter/cloud-native/gpu-telemetry/latest/)
 
 ## 从秒级扩展到小时级
 
 | 方面 | 秒级演示 | 小时级变化 |
 | --- | --- | --- |
-| 请求生命周期 | 接受后即返回 | 保持相同异步模型，不把 HTTP timeout 调成数小时 |
+| 请求生命周期 | 接受后即返回 | 继续使用立即返回任务 ID 的异步模型 |
 | 超时 | 短 attempt deadline | 分开排队、单次执行、心跳、总体 deadline；不能只扩大一个 timeout |
 | 恢复损失 | 一个小批次 | 根据重算成本与存储开销确定 checkpoint 间隔 |
 | 执行隔离 | mock Worker | 子进程/容器隔离，失联确认、优雅关停与强制终止 |
@@ -189,8 +189,8 @@ Temporal 对 Activity 超时、重试和心跳有成熟模型，是后续生产�
 
 ## 已知实现取舍
 
-- schema.sql 使用 IF NOT EXISTS 初始化 v1；不是通用版本迁移系统。滚动升级、多版本 handler 调度尚未实现。虽然任务保存 definition 快照，执行代码目前只支持 animation-v1；不能在有未完成任务时直接替换不兼容的 handler。
-- 每次操作新建 psycopg 连接，未做连接池；领取会锁定最多 32 个候选任务。本机少量任务已验证，大吞吐需收缩锁定范围、加连接池和公平调度。
+- schema.sql 初始化基础表，迁移文件升级到 schema v2。滚动升级、多版本 handler 调度尚未实现。虽然任务保存 definition 快照，执行代码目前只支持 animation-v1；不能在有未完成任务时直接替换不兼容的 handler。
+- 每次操作新建 psycopg 连接，未做连接池；领取会锁定最多 32 个候选任务。本机少量任务已验证，更大吞吐需要评估锁定范围、连接池和调度策略。
 - 缓存完整性校验在领取事务内读取小文件；大视频必须移到锁外校验，再带摘要/版本条件提交，避免长事务。
 - 事件在数据库事务内提交，是事实来源；stdout 日志可能在事务最终回滚前已输出，只用于排障。/metrics 来自数据库聚合，无完整 OTel trace 或 Prometheus/Grafana 服务。
 - 产物目录采用 UUID 隔离（而非可变文件覆盖）；每个 artifact 记录创建 attempt。失去所有权后新生成的孤儿文件不发布；自动引用计数 GC 尚未实现。

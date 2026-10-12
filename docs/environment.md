@@ -1,12 +1,12 @@
-# 本机环境与实际空间
+# 运行环境与空间
 
-2026-10-12 实测：Apple M5 / 10 逻辑核 / 16GiB 内存 / macOS 26.6.2，启动前约 709.7GiB 可用空间。足以完成本 MVP，无需租机。
+已在 Apple M5、16 GiB 内存的 macOS 本机验证。建议 Python 3.12+、2 核 CPU、4 GB 内存及 1–2 GB 空闲空间；本次交付无需租赁服务器。
 
 ## 实际安装与目录
 
-- 复用 Codex 已有 Python 3.12.14 创建项目 `.venv`；未修改系统 Python 3.9.6。评审运行只需要自己的 Python 3.12+，不依赖作者私有路径。
+- 复用 Codex 已有 Python 3.12.14 创建项目 `.venv`；未修改系统 Python 3.9.6。评审环境使用 Python 3.12+ 即可。
 - FastAPI / psycopg / Pillow / pytest / httpx / ruff 锁定版本见 requirements*.lock。
-- pgserver 0.1.4 自带 PostgreSQL 16.2（本地 Unix socket），数据库与日志放 `.local`。这是真实 PostgreSQL，无 SQLite 替代。
+- pgserver 0.1.4 自带 PostgreSQL 16.2（本地 Unix socket），数据库与日志放 `.local`。使用真实 PostgreSQL。
 - 原生 HTML/CSS/JS，无前端 npm 依赖。复用 Codex 浏览器验收，没有新增浏览器下载。
 - 未安装 Docker Desktop、CUDA、PyTorch、大模型权重、Redis 或 Kubernetes。提供 Compose 备选文件但未运行验证。
 - 6 项新增 skills 共约 92KiB，位于用户级 Codex skills 目录；运行项目不需要 skills。
@@ -40,7 +40,7 @@ GitHub 保存可浏览源码，ZIP 为额外备份；不上传 .venv/.local/数�
 
 ### 打包复核后的清理结果
 
-全新虚拟环境复核通过后，清理独立复核目录、下载缓存与测试临时文件约 255MiB。`du -sh` 显示主项目约 **269MiB**（.venv 135MiB、.local 133MiB）；源码 ZIP 约 **187KiB**。依赖和持久数据库仍保留，等待公开上传验证后再决定停止演示与清理依赖。此值是磁盘已分配空间，与上表逻辑字节不同。
+全新虚拟环境复核通过后，清理独立复核目录、下载缓存与测试临时文件约 255MiB。`du -sh` 显示主项目约 **269MiB**（.venv 135MiB、.local 133MiB）；源码 ZIP 约 **187KiB**。依赖和持久数据库仍保留，本地演示所需依赖和数据库仍保留。此值是磁盘已分配空间，与上表逻辑字节不同。
 
 ### v0.2 清理后快照
 

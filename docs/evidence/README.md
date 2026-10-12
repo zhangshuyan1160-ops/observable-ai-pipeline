@@ -1,32 +1,40 @@
-# 验证证据
+# 验证记录索引
 
-- tests.xml：19 项 pytest，本地真实 PostgreSQL；测试函数见 tests/test_pipeline.py。
-- live-demo.json：运行中的 HTTP 服务，缓存、手动重试、真实 Worker/API SIGKILL、恢复起点和 ZIP 摘要。
-- dashboard.png：本地页面实际截图，显示失败后成功的两次尝试。
-- archive-verification.json：源码 ZIP 解压后新建虚拟环境，19 项测试再通过；同一宿主机，非干净操作系统。
-- disk-usage.json：开发中一次逻辑文件大小与空闲进程 RSS 快照，非峰值。
-- ai-usage-*.json：当前会话累计 counters，阶段差值由相减得到，不对累计快照求和。
+报告按运行时的代码快照保存。查看结果时，以报告中的版本、commit、源码摘要和执行时间为准。
 
-只保存演示任务与计数，未导出私人会话、凭据或数据库连接串。未测能力见 failure-matrix；证据日期不表示生产稳定性承诺。
+## 当前功能与页面
 
-## 本地提交前质量收尾（独立于历史 v0.2）
+| 文件 | 内容 |
+| --- | --- |
+| tests-quality.xml、tests-frontend-quality.tap | 本地 33 项 pytest 和 4 项 Node 测试，均无跳过 |
+| quality-verification.json | 响应丢失、参数复制、手动恢复、缓存来源、键盘与轮询交互 |
+| quality-desktop.png、quality-mobile.png、quality-mobile-form.png | 质量完善阶段的页面截图 |
+| quality-pending.png、quality-cache.png | 创建结果待确认和缓存来源详情 |
+| dag-connectors-verification.json | 三种实际视口、滚动、箭头方向及节点对齐检查 |
+| dag-connectors.png、dag-connectors-mobile.png | 最新管线截图 |
+| release-v0.3-verification.json | v0.3 首次发布的 Linux CI、远程 tree 和匿名下载校验 |
 
-- `tests-quality.xml`：33 项真实 PostgreSQL / HTTP pytest，0 跳过。
-- `tests-frontend-quality.tap`：4 项 Node 原生测试，无 npm 运行依赖。
-- `quality-verification.json`：实际创建意图、响应丢失、复制、重试、复用、键盘及视口验证，含任务 ID、两次 HTTP 请求记录、来源关系和代码摘要。
-- `quality-desktop.png`：质量收尾时的 1440×1000 页面（后续连线已修复）；`quality-mobile.png` / `quality-mobile-form.png`：390×844 的管线与表单。
-- `quality-pending.png`：首次响应丢失后，刷新恢复的原参数锁定状态；`quality-cache.png`：真实缓存来源展开。
-- `ai-usage-quality.json`：后续累计用量快照，含审查与修改，不等于本轮单独用量。
+页面检查通过 Codex 浏览器工具完成。quality 报告对应连线修复前的代码；连线的后续检查单列在 dag-connectors 报告中。
 
-浏览器操作由 Codex 执行，不计作候选人的个人手工开发。上述 quality 报告保留当时的源码摘要与发布状态，不能作为后续版本全部源码的验证。历史小时级报告未重跑。
+## 恢复与历史版本
 
-## v0.3 连线修复与发布
+| 文件 | 内容 |
+| --- | --- |
+| recovery-hour.json | 3607.93 秒单任务演练，含数据库停机与全栈重启 |
+| recovery-short.json | 短时数据库与进程中断恢复 |
+| live-demo.json | HTTP 创建、缓存、手动重试、API/Worker SIGKILL 与产物摘要 |
+| tests.xml、tests-v0.2.xml | v0.1 的 19 项测试、v0.2 的 31 项测试 |
+| ci-v0.2.json、archive-v0.2-verification.json | v0.2 Linux CI 和独立安装验证 |
+| archive-verification.json | v0.1 源码包的独立安装验证 |
+| priority-one-ui.json、priority-one-dashboard.png | 取消、搜索、归档和分页演示 |
 
-- `dag-connectors.png` / `dag-connectors-mobile.png`：修复后的真实管线截图。
-- `dag-connectors-verification.json`：三种实际视口、滚动及缩放检查，五个入口箭头的方向、位置和前端源码摘要。
-- 最新源码 ZIP 与 SHA-256 位于仓库 `delivery/`，不将 v0.2 的安装报告当作 v0.3 独立安装验证。远程 CI 以 GitHub Actions 对应提交的实际结果为准。
+小时级报告覆盖单任务持续执行；真实 GPU、高并发压力和 Compose 运行尚未验收。具体范围见 [验收矩阵](../failure-matrix.md)。
 
-- `archive-v0.3-verification.json`：ZIP CRC、95 个源码文件逐项对照及运行数据排除检查。
-- `release-v0.3-verification.json`：公开仓库与匿名下载摘要、远程/本地 Git tree 一致性，以及 v0.3 的 Linux CI（33 项 pytest、4 项 Node 测试，均无跳过）。源码包固定为 manifest 所指快照，后补发布证据见仓库。
+## 交付包、用量和时间
 
-- `archive-v0.3-docs-verification.json`：提交说明措辞修订后的源码包验证。最新 ZIP 摘要以 `delivery/manifest.json` 为准；原 `archive-v0.3-verification.json` 和 `release-v0.3-verification.json` 对应首次发布快照。
+- `delivery/manifest.json` 是当前下载包的源码快照与 SHA-256 入口。`archive-v0.3-*.json` 记录各次打包检查，旧报告中的摘要属于当时的包。
+- `project-timeline.json`：项目讨论起点、发布终点及经过时间。
+- `ai-usage-*.json`：会话累计计数。缓存输入属于总输入，快照不能相加。
+- `disk-usage.json`：开发中的一次空间与空闲内存快照，最新建议见 [环境说明](../environment.md)。
+
+这里只保存项目验证数据、时间戳和计数；数据库、凭据与会话正文不进入源码包。

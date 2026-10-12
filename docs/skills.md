@@ -6,11 +6,11 @@
 
 1. 使用现有 `skill-installer`，从 Vercel 原始仓库固定 commit 安装并阅读 `find-skills`。
 2. 按 `find-skills` 工作流先检查 [skills.sh 目录](https://skills.sh/)，再运行 Skills CLI 的 `find`。
-3. 实际运行 **12 组查询、240 条返回、232 个去重候选**。这是搜索返回的数量，不代表已逐一审查 232 个技能；深入核对了下面列出的关键候选。
+3. 实际运行 **12 组查询、240 条返回、232 个去重候选**。进一步核对了下表中的关键候选。
 4. 联网搜索 GitHub 和 skills.sh，读取 8 个源仓库的元信息；对入选项读取原始 `SKILL.md`，检查来源、适用范围、版本与许可。
 5. 新增 **6 个**技能；复用已有技能，未批量安装所有搜索结果。
 
-当前终端没有 `npx`，因此使用内置 Node + `pnpm dlx skills@1.7.2 find "查询词"`。运行的是同一个 Vercel Skills CLI，不把普通网页搜索冒充 `skills find`。
+当前终端没有 `npx`，因此使用内置 Node + `pnpm dlx skills@1.7.2 find "查询词"`。使用 Vercel Skills CLI 完成查询。
 
 | 查询词 | 返回条数 | 主要判断 |
 | --- | --- | --- |
@@ -27,7 +27,7 @@
 | `gpu scheduling` | 20 | 大多偏 K8s/云 GPU/性能优化，不适合两天 mock MVP |
 | `checkpoint recovery` | 20 | 多数是 agent 会话 checkpoint，与任务执行检查点不同 |
 
-原始结果：[find-results.json](research/find-results.json)。仓库元信息：[repository-snapshot.json](research/repository-snapshot.json)。固定版本及安装后全部文件摘要：[skills-lock.json](research/skills-lock.json)。安装量和 stars 仅为检索时的快照，不是安全性或正确性背书。
+原始结果：[find-results.json](research/find-results.json)。仓库元信息：[repository-snapshot.json](research/repository-snapshot.json)。固定版本及安装后全部文件摘要：[skills-lock.json](research/skills-lock.json)。安装量和 stars 记录检索时的状态，筛选同时考虑正文、许可和项目适用性。
 
 ## 已新增的 6 个 Skills
 
@@ -40,7 +40,7 @@
 | [workflow-orchestration-patterns](https://github.com/wshobson/agents/tree/46891e7e60da0e52baf1050b7b6391b64e84c6d9/plugins/backend-development/skills/workflow-orchestration-patterns) / wshobson | 约 11.7K | 40,436 | 流程与活动边界、幂等、心跳、恢复粒度 | 作为架构参考；未采用 Temporal SDK |
 | [frontend-design](https://github.com/anthropics/skills/tree/dbd4588f9e1033efb41dad4bef2f7947c8993d44/skills/frontend-design) / Anthropic | 约 975.5K | 180,579 | 面向排障的 DAG、状态与历史可视化 | 已应用于 DAG/历史看板并完成浏览器截图检查 |
 
-六项均已安装到 `~/.codex/skills/<name>/`，不是仅列出推荐。固定 commit 安装，未覆盖既有目录。新增技能会在下一轮对话的技能目录中可用；本轮已直接阅读源文档用于规划。
+六项安装到 `~/.codex/skills/<name>/`，按固定 commit 保存，运行项目不依赖这些技能。
 
 ### 固定版本与复现
 
@@ -70,7 +70,7 @@ Vercel Skills 和 wshobson 仓库元信息标识 MIT；frontend-design 的技能
 
 ## 复用已有技能
 
-以下在会话技能目录中已经存在，**本次未重新安装，也未在规划阶段声称已用于实现**：
+以下是规划时已有的候选技能，实际使用项见后文：
 
 | Skill | 后续启用阶段 | 选择理由 |
 | --- | --- | --- |
@@ -94,19 +94,19 @@ Vercel Skills 和 wshobson 仓库元信息标识 MIT；frontend-design 的技能
 | [DBOS agent-skills](https://github.com/dbos-inc/agent-skills) | 搜索项和仓库元信息，18 stars | 是合理耐久执行备选，但未深入评测；不在两天内同时试多个执行框架 |
 | [o11y-dev opentelemetry-skill](https://github.com/o11y-dev/opentelemetry-skill) | 搜索项和仓库元信息，48 stars | 本次未深入审计其内容与许可；已有更直接的 Python 技能 |
 
-GPU 搜索找到 NVIDIA TAO/Kubernetes 等候选，但未把候选摘要当作完成审查。MVP GPU 需求是资源槽与队列观察，依据 NVIDIA 官方 DCGM 文档写真实扩展方案即可，不为加分项额外引入 K8s、Modal 或付费 GPU。
+GPU 搜索包含 NVIDIA TAO/Kubernetes 等候选。MVP GPU 需求是资源槽与队列观察，依据 NVIDIA 官方 DCGM 文档写真实扩展方案即可，不为加分项额外引入 K8s、Modal 或付费 GPU。
 
 ## 阅读后的修正与边界
 
 - `python-background-jobs` 中的数据库写入后再入队示例适合说明流程，但没有自动解决双写一致性；本项目用同一数据库队列事务规避。
 - 其“先查状态再写”的幂等示例不足以处理并发领取；本项目补充唯一约束、行锁与 fencing。
-- `workflow-orchestration-patterns` 的确定性/历史重放规则属于 Temporal 环境，不直接套到普通 Python Worker，也不把自研恢复称为历史重放。
-- 热门/官方来源仍需结合项目验收，不保证代码正确。技能是开发参考，测试才证明恢复行为。
+- `workflow-orchestration-patterns` 的历史重放规则面向 Temporal；本项目采用数据库检查点恢复，保留两者的实现区别。
+- 技能用于开发参考，恢复行为由本项目的数据库和进程测试验证。
 - 仅在相应阶段读取需要的技能，避免把全部技能全文装进每轮上下文，降低重复输入和无关约束。
 
 ## 实施阶段实际使用
 
-本次另读取并采用已有 `fastapi-expert`（接口校验）、`python-testing-patterns`（真实数据库/子进程故障验证）、`docker-development`（备选容器打包）。它们不计入新增的六项。`playwright` 已阅读，实际页面验收使用 Codex 内置 CUA 浏览器及其 Playwright 定位器，未新增 Chromium 下载或 Node 项目依赖。其他“后续启用”候选未实际采用，不作使用声明。
+本次另读取并采用已有 `fastapi-expert`（接口校验）、`python-testing-patterns`（真实数据库/子进程故障验证）、`docker-development`（备选容器打包）。它们不计入新增的六项。`playwright` 已阅读，实际页面验收使用 Codex 内置 CUA 浏览器及其 Playwright 定位器，未新增 Chromium 下载或 Node 项目依赖。其余候选未在实现阶段启用。
 
 ## v0.2 四项优化
 

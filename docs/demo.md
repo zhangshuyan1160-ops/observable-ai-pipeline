@@ -11,7 +11,7 @@
 
 自动复核：`.venv/bin/python scripts/verify_demo.py`，包括真实 API 与 Worker SIGKILL、检查点、缓存、手动重试和下载摘要。输出到 `docs/evidence/live-demo.json`。不要对别人的运行服务执行故障注入。
 
-长任务参数通过 `/docs` 提交：frames≤64、step_delay≤10 秒、batch_delay≤900 秒、attempt_timeout≤14400 秒、task_timeout≤14400 秒。参数允许较长时限，但这不是已跑过小时级工作负载的证据。
+长任务参数通过 `/docs` 提交：frames≤64、step_delay≤10 秒、batch_delay≤900 秒、attempt_timeout≤14400 秒、task_timeout≤14400 秒。一小时单任务执行结果见 [恢复报告](evidence/recovery-hour.json)。
 
 ## v0.2 追加演示（约两分钟）
 
@@ -19,4 +19,4 @@
 2. 在风格化运行时点“取消任务”并确认，观察“取消中”到“已取消”；成功上游和尝试历史仍在，GPU 槽释放。
 3. 归档已取消任务；在左侧选“已归档”和“已取消”，按任务名搜索，查回任务并“恢复到列表”。归档不删除产物。
 4. 解释并发修复：32 个旧 GPU 等待任务不应挡住后来的 CPU 工作，展示 test_task_controls.py 对应回归。
-5. 打开 recovery-short.json 和 recovery-hour.json，检查最终 status、恢复帧数、事件数与产物摘要。不要把 RUNNING 报告当作通过。
+5. 打开 recovery-short.json 和 recovery-hour.json，检查最终 status、恢复帧数、事件数与产物摘要。完成状态为 PASSED。

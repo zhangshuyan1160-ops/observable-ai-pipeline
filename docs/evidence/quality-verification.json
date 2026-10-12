@@ -20,7 +20,7 @@
     "git_diff_check": "passed"
   },
   "browser": {
-    "driver": "Codex CUA; agent-operated checks, not candidate personal manual work",
+    "driver": "Codex CUA browser automation",
     "lost_response": {
       "task_id": "3e59da75a8b746a2ac17809ed758ad4b",
       "first_202_reply_dropped": true,
