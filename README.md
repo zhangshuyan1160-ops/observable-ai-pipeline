@@ -4,7 +4,7 @@
 
 题 D 的两天 MVP。计算和 GPU 使用 MOCK，状态事务、独立 Worker、进程中断、检查点和文件产物真实执行。无需服务器、CUDA、大模型、Node 构建链或 Docker Desktop。
 
-**v0.3.0：稳定创建幂等、完整参数复制、恢复诊断、缓存来源及响应式管线连线。** 本地 33 项 pytest 和 4 项前端测试通过；[改动与验收](docs/submission-quality.md) · [GitHub Actions](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/workflows/ci.yml)。
+**v0.3.0：稳定创建幂等、完整参数复制、恢复诊断、缓存来源及响应式管线连线。** 本地与 Linux CI 的 33 项 pytest 和 4 项前端测试通过；[改动与验收](docs/submission-quality.md) · [发布校验](docs/evidence/release-v0.3-verification.json) · [GitHub Actions](https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/workflows/ci.yml)。
 
 ![任务管线](docs/evidence/dag-connectors.png)
 

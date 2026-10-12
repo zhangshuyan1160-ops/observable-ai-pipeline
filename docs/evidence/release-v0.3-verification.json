@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-10-12T14:22:51.414039+00:00",
+  "version": "0.3.0",
+  "repository": "https://github.com/zhangshuyan1160-ops/observable-ai-pipeline",
+  "public": true,
+  "source_publication_commit": "7c00a13aa8425f64adf2c1494f7412588169ed9e",
+  "source_publication_tree": "b765b26603f325fe54d44ce507a35096c1138121",
+  "local_publication_commit": "e8d0a4ad1388493e620dc2e4f92132e218714cd1",
+  "local_remote_tree_equal": true,
+  "ci": {
+    "run_id": 38262160754,
+    "job_id": 114855143289,
+    "url": "https://github.com/zhangshuyan1160-ops/observable-ai-pipeline/actions/runs/38262160754",
+    "status": "completed",
+    "conclusion": "success",
+    "environment": "ubuntu-latest, Python 3.12, Node 22, PostgreSQL 16 service",
+    "pytest": {
+      "passed": 33,
+      "skipped": 0,
+      "seconds": 31.12
+    },
+    "node": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ruff": "passed",
+    "ruff_format": "passed"
+  },
+  "archive": {
+    "commit": "162a34322018443ccdeeef4070c665cf1167f177",
+    "archive": "observable-ai-pipeline-v0.3.0.zip",
+    "bytes": 622707,
+    "sha256": "28e6f2831e742700f5c0432f7d83d09bb224c25b744e940cbaba1b0768a3b497",
+    "commit_scope": "Local source snapshot; GitHub publication commit is separate.",
+    "anonymous_download_verified": true,
+    "download_sha256": "28e6f2831e742700f5c0432f7d83d09bb224c25b744e940cbaba1b0768a3b497",
+    "zip_crc_passed": true,
+    "files_match_source_snapshot": true
+  },
+  "scope_notes": [
+    "This report records the source publication commit. The following publication-record commit changes documentation/evidence only.",
+    "Source ZIP is the immutable snapshot named in delivery/manifest.json; later publication records are available in the repository.",
+    "Existing hour-long recovery and fresh-install evidence are historical v0.2 reports; neither was rerun for v0.3.",
+    "Local runtime databases, task artifacts, environments and caches were not uploaded."
+  ]
+}

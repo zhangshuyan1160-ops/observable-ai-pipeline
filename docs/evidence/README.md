@@ -25,3 +25,6 @@
 - `dag-connectors.png` / `dag-connectors-mobile.png`：修复后的真实管线截图。
 - `dag-connectors-verification.json`：三种实际视口、滚动及缩放检查，五个入口箭头的方向、位置和前端源码摘要。
 - 最新源码 ZIP 与 SHA-256 位于仓库 `delivery/`，不将 v0.2 的安装报告当作 v0.3 独立安装验证。远程 CI 以 GitHub Actions 对应提交的实际结果为准。
+
+- `archive-v0.3-verification.json`：ZIP CRC、95 个源码文件逐项对照及运行数据排除检查。
+- `release-v0.3-verification.json`：公开仓库与匿名下载摘要、远程/本地 Git tree 一致性，以及 v0.3 的 Linux CI（33 项 pytest、4 项 Node 测试，均无跳过）。源码包固定为 manifest 所指快照，后补发布证据见仓库。
